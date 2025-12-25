@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { UserVault, MockERC20 } from "../typechain-types";
+import { UserVault, MockERC20, ChainlinkMock } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("UserVault", function () {
@@ -10,6 +10,7 @@ describe("UserVault", function () {
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
   let factory: SignerWithAddress;
+  let priceFeed: ChainlinkMock;
 
   const INITIAL_MINT = ethers.parseEther("10000");
   const VAULT_NAME = "SmartX Vault Token";
@@ -27,6 +28,11 @@ describe("UserVault", function () {
     await asset.mint(user1.address, INITIAL_MINT);
     await asset.mint(user2.address, INITIAL_MINT);
 
+    // Deploy ChainlinkMock (2000 USDC/USD, 8 decimals)
+    const ChainlinkMockFactory = await ethers.getContractFactory("ChainlinkMock");
+    priceFeed = await ChainlinkMockFactory.deploy(200000000000, 8); // $2000
+    await priceFeed.waitForDeployment();
+
     // Deploy UserVault
     const UserVaultFactory = await ethers.getContractFactory("UserVault");
     vault = await UserVaultFactory.deploy(
@@ -34,7 +40,8 @@ describe("UserVault", function () {
       owner.address,
       factory.address,
       VAULT_NAME,
-      VAULT_SYMBOL
+      VAULT_SYMBOL,
+      await priceFeed.getAddress()
     );
     await vault.waitForDeployment();
   });
@@ -73,7 +80,8 @@ describe("UserVault", function () {
           owner.address,
           factory.address,
           VAULT_NAME,
-          VAULT_SYMBOL
+          VAULT_SYMBOL,
+          await priceFeed.getAddress()
         )
       ).to.be.revertedWith("UserVault: asset is zero address");
     });
@@ -86,9 +94,24 @@ describe("UserVault", function () {
           owner.address,
           ethers.ZeroAddress,
           VAULT_NAME,
-          VAULT_SYMBOL
+          VAULT_SYMBOL,
+          await priceFeed.getAddress()
         )
       ).to.be.revertedWith("UserVault: factory is zero address");
+    });
+
+    it("Should revert if price feed is zero address", async function () {
+      const UserVaultFactory = await ethers.getContractFactory("UserVault");
+      await expect(
+        UserVaultFactory.deploy(
+          await asset.getAddress(),
+          owner.address,
+          factory.address,
+          VAULT_NAME,
+          VAULT_SYMBOL,
+          ethers.ZeroAddress
+        )
+      ).to.be.revertedWith("UserVault: price feed is zero address");
     });
   });
 
@@ -416,6 +439,47 @@ describe("UserVault", function () {
       // User2 can redeem transferred shares
       await vault.connect(user2).redeem(depositAmount / 2n, user2.address, user2.address);
       expect(await vault.balanceOf(user2.address)).to.equal(0);
+    });
+  });
+
+
+  describe("Price Feeds", function () {
+    const depositAmount = ethers.parseEther("1.0"); // 1 ETH (or 1 Unit of Asset)
+
+    beforeEach(async function () {
+      await asset.connect(user1).approve(await vault.getAddress(), depositAmount);
+      await vault.connect(user1).deposit(depositAmount, user1.address);
+    });
+
+    it("Should return correct asset price in USD", async function () {
+      // Feed is $2000 (2000 * 1e8)
+      // Expected result is 2000 * 1e18
+      const expectedPrice = ethers.parseUnits("2000", 18);
+      expect(await vault.getAssetPriceUSD()).to.equal(expectedPrice);
+    });
+
+    it("Should return correct total value in USD", async function () {
+      // Total assets = 1.0 (1e18)
+      // Price = $2000
+      // Value = 2000 USD (2000 * 1e18)
+      const expectedValue = ethers.parseUnits("2000", 18);
+      expect(await vault.getTotalValueUSD()).to.equal(expectedValue);
+    });
+
+    it("Should return correct share price in USD", async function () {
+      // 1 Share = 1 Asset (1:1 initially)
+      // Share Price = $2000
+      const expectedPrice = ethers.parseUnits("2000", 18);
+      expect(await vault.getSharePriceUSD()).to.equal(expectedPrice);
+    });
+
+    it("Should update value when price feed updates", async function () {
+      // Update price to $3000
+      await priceFeed.setPrice(300000000000); // 3000 * 1e8
+
+      const expectedValue = ethers.parseUnits("3000", 18);
+      expect(await vault.getTotalValueUSD()).to.equal(expectedValue);
+      expect(await vault.getSharePriceUSD()).to.equal(expectedValue);
     });
   });
 });

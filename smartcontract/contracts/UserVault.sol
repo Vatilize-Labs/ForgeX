@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./interfaces/IERC4626.sol";
+import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 /**
  * @title UserVault
@@ -28,6 +29,9 @@ contract UserVault is ERC20, IERC4626, Ownable {
     /// @dev Reference to the VaultFactory contract
     address private immutable _factory;
 
+    /// @dev Reference to the Chainlink Price Feed
+    AggregatorV3Interface private immutable _priceFeed;
+
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -45,13 +49,16 @@ contract UserVault is ERC20, IERC4626, Ownable {
         address owner_,
         address factory_,
         string memory name_,
-        string memory symbol_
+        string memory symbol_,
+        address priceFeed_
     ) ERC20(name_, symbol_) Ownable(owner_) {
         require(asset_ != address(0), "UserVault: asset is zero address");
         require(factory_ != address(0), "UserVault: factory is zero address");
+        require(priceFeed_ != address(0), "UserVault: price feed is zero address");
         
         _asset = IERC20(asset_);
         _factory = factory_;
+        _priceFeed = AggregatorV3Interface(priceFeed_);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -271,6 +278,45 @@ contract UserVault is ERC20, IERC4626, Ownable {
     }
 
     /*//////////////////////////////////////////////////////////////
+                        PRICE FEED LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev Returns the current asset price in USD from Chainlink
+     * @return price The price of 1 asset unit in USD (with 18 decimals)
+     */
+    function getAssetPriceUSD() public view returns (uint256) {
+        (, int256 price,,,) = _priceFeed.latestRoundData();
+        require(price > 0, "UserVault: invalid price");
+        
+        uint8 feedDecimals = _priceFeed.decimals();
+        return uint256(price) * 10**(18 - feedDecimals);
+    }
+
+    /**
+     * @dev Returns the total vault value in USD
+     * @return value The total value in USD (with 18 decimals)
+     */
+    function getTotalValueUSD() public view returns (uint256) {
+        uint256 totalAssets_ = totalAssets();
+        uint256 price = getAssetPriceUSD();
+        
+        // Both are 18 decimals, so result is 36 decimals. Divide by 1e18 to get 18 decimals.
+        return (totalAssets_ * price) / 1e18;
+    }
+
+    /**
+     * @dev Returns the price per share in USD
+     * @return price The price of 1 share in USD (with 18 decimals)
+     */
+    function getSharePriceUSD() public view returns (uint256) {
+        uint256 supply = totalSupply();
+        if (supply == 0) return getAssetPriceUSD(); // Initial share price equals asset price
+        
+        return getTotalValueUSD().mulDiv(1e18, supply);
+    }
+
+    /*//////////////////////////////////////////////////////////////
                         INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
@@ -310,9 +356,9 @@ contract UserVault is ERC20, IERC4626, Ownable {
     {
         uint256 supply = totalSupply();
         
-        // If no shares exist, return 0
+        // If no shares exist, 1:1 ratio
         if (supply == 0) {
-            assets = 0;
+            assets = shares;
         } else {
             // Calculate proportional assets
             uint256 totalAssets_ = totalAssets();

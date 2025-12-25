@@ -50,6 +50,9 @@ contract VaultFactory is Ownable {
     /// @dev Mapping to store registration timestamps
     mapping(address => uint256) private userRegistrationTimestamps;
 
+    /// @dev Mapping to store price feeds for assets
+    mapping(address => address) public assetPriceFeeds;
+
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -65,6 +68,13 @@ contract VaultFactory is Ownable {
         string username,
         uint256 timestamp
     );
+
+    /**
+     * @dev Emitted when a price feed is updated
+     * @param asset The asset address
+     * @param feed The price feed address
+     */
+    event PriceFeedUpdated(address indexed asset, address indexed feed);
 
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
@@ -106,6 +116,23 @@ contract VaultFactory is Ownable {
 
         // Emit event
         emit UserRegistered(msg.sender, username, block.timestamp);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                        PRICE FEED MANAGEMENT
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @dev Set the price feed for a supported asset
+     * @param asset The asset address
+     * @param feed The Chainlink price feed address
+     */
+    function setAssetPriceFeed(address asset, address feed) external onlyOwner {
+        require(asset != address(0), "VaultFactory: asset is zero address");
+        require(feed != address(0), "VaultFactory: feed is zero address");
+        
+        assetPriceFeeds[asset] = feed;
+        emit PriceFeedUpdated(asset, feed);
     }
 
     /*//////////////////////////////////////////////////////////////
