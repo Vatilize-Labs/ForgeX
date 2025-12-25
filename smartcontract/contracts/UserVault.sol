@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./interfaces/IERC4626.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
  * @title UserVault
@@ -28,6 +29,9 @@ contract UserVault is ERC20, IERC4626, Ownable {
     /// @dev Reference to the VaultFactory contract
     address private immutable _factory;
 
+    /// @dev Reference to the Chainlink Price Feed
+    AggregatorV3Interface private immutable _priceFeed;
+
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -45,13 +49,16 @@ contract UserVault is ERC20, IERC4626, Ownable {
         address owner_,
         address factory_,
         string memory name_,
-        string memory symbol_
+        string memory symbol_,
+        address priceFeed_
     ) ERC20(name_, symbol_) Ownable(owner_) {
         require(asset_ != address(0), "UserVault: asset is zero address");
         require(factory_ != address(0), "UserVault: factory is zero address");
+        require(priceFeed_ != address(0), "UserVault: price feed is zero address");
         
         _asset = IERC20(asset_);
         _factory = factory_;
+        _priceFeed = AggregatorV3Interface(priceFeed_);
     }
 
     /*//////////////////////////////////////////////////////////////
