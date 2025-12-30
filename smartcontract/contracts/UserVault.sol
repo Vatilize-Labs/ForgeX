@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "./interfaces/IERC4626.sol";
+import "./interfaces/ICToken.sol";
 import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 /**
@@ -38,6 +39,9 @@ contract UserVault is ERC20, IERC4626, Ownable {
     /// @dev Array of protocol names for iteration
     string[] private protocolNames;
 
+    /// @dev Amount of assets currently deposited in Compound
+    uint256 private compoundDeposited;
+
     /*//////////////////////////////////////////////////////////////
                             CUSTOM ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -51,6 +55,15 @@ contract UserVault is ERC20, IERC4626, Ownable {
     /// @dev Thrown when amount is invalid
     error InvalidAmount();
 
+    /// @dev Thrown when protocol address is not set
+    error ProtocolAddressNotSet();
+
+    /// @dev Thrown when Compound operation fails
+    error CompoundOperationFailed();
+
+    /// @dev Thrown when insufficient balance for operation
+    error InsufficientBalance();
+
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -62,6 +75,20 @@ contract UserVault is ERC20, IERC4626, Ownable {
      * @param newAmount The new allocation amount
      */
     event ProtocolAllocationChanged(string indexed protocol, uint256 oldAmount, uint256 newAmount);
+
+    /**
+     * @dev Emitted when assets are deployed to a protocol
+     * @param protocol The name of the protocol
+     * @param amount The amount deployed
+     */
+    event ProtocolDeployed(string indexed protocol, uint256 amount);
+
+    /**
+     * @dev Emitted when assets are withdrawn from a protocol
+     * @param protocol The name of the protocol
+     * @param amount The amount withdrawn
+     */
+    event ProtocolWithdrawn(string indexed protocol, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
