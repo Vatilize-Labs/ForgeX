@@ -42,6 +42,9 @@ contract UserVault is ERC20, IERC4626, Ownable {
     /// @dev Amount of assets currently deposited in Compound
     uint256 private compoundDeposited;
 
+    /// @dev Pause state of the vault
+    bool private _paused;
+
     /*//////////////////////////////////////////////////////////////
                             CUSTOM ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -63,6 +66,9 @@ contract UserVault is ERC20, IERC4626, Ownable {
 
     /// @dev Thrown when insufficient balance for operation
     error InsufficientBalance();
+
+    /// @dev Thrown when operation is attempted while vault is paused
+    error VaultPaused();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -89,6 +95,20 @@ contract UserVault is ERC20, IERC4626, Ownable {
      * @param amount The amount withdrawn
      */
     event ProtocolWithdrawn(string indexed protocol, uint256 amount);
+
+    /**
+     * @dev Emitted when vault is paused
+     * @param vault The address of the vault
+     * @param pausedBy The address that paused the vault
+     */
+    event VaultPaused(address indexed vault, address indexed pausedBy);
+
+    /**
+     * @dev Emitted when vault is unpaused
+     * @param vault The address of the vault
+     * @param unpausedBy The address that unpaused the vault
+     */
+    event VaultUnpaused(address indexed vault, address indexed unpausedBy);
 
     /*//////////////////////////////////////////////////////////////
                             CONSTRUCTOR
