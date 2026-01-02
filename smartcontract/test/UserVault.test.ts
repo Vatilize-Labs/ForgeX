@@ -589,3 +589,193 @@ describe("UserVault", function () {
       expect(await vault.getProtocolAllocation("NonExistent")).to.equal(0);
     });
   });
+  describe("Pause/Unpause Functionality", function () {
+    const depositAmount = ethers.parseEther("1000");
+
+    beforeEach(async function () {
+      // User1 deposits some assets for testing
+      await asset.connect(user1).approve(await vault.getAddress(), depositAmount);
+      await vault.connect(user1).deposit(depositAmount, user1.address);
+    });
+
+    describe("Pause Operations", function () {
+      it("Should allow owner to pause vault", async function () {
+        await expect(vault.connect(owner).pause())
+          .to.emit(vault, "VaultPaused")
+          .withArgs(await vault.getAddress(), owner.address);
+
+        expect(await vault.isPaused()).to.equal(true);
+      });
+
+      it("Should revert when non-owner tries to pause", async function () {
+        await expect(
+          vault.connect(user1).pause()
+        ).to.be.revertedWithCustomError(vault, "OwnableUnauthorizedAccount");
+      });
+
+      it("Should revert when pausing already paused vault", async function () {
+        await vault.connect(owner).pause();
+        
+        await expect(
+          vault.connect(owner).pause()
+        ).to.be.revertedWithCustomError(vault, "EnforcedPause");
+      });
+    });
+
+    describe("Unpause Operations", function () {
+      beforeEach(async function () {
+        await vault.connect(owner).pause();
+      });
+
+      it("Should allow owner to unpause vault", async function () {
+        await expect(vault.connect(owner).unpause())
+          .to.emit(vault, "VaultUnpaused")
+          .withArgs(await vault.getAddress(), owner.address);
+
+        expect(await vault.isPaused()).to.equal(false);
+      });
+
+      it("Should revert when non-owner tries to unpause", async function () {
+        await expect(
+          vault.connect(user1).unpause()
+        ).to.be.revertedWithCustomError(vault, "OwnableUnauthorizedAccount");
+      });
+
+      it("Should revert when unpausing already unpaused vault", async function () {
+        await vault.connect(owner).unpause();
+        
+        await expect(
+          vault.connect(owner).unpause()
+        ).to.be.revertedWithCustomError(vault, "EnforcedPause");
+      });
+    });
+
+    describe("Protected Functions When Paused", function () {
+      beforeEach(async function () {
+        await vault.connect(owner).pause();
+      });
+
+      it("Should revert deposit when paused", async function () {
+        const amount = ethers.parseEther("100");
+        await asset.connect(user2).approve(await vault.getAddress(), amount);
+
+        await expect(
+          vault.connect(user2).deposit(amount, user2.address)
+        ).to.be.revertedWithCustomError(vault, "EnforcedPause");
+      });
+
+      it("Should revert withdraw when paused", async function () {
+        const amount = ethers.parseEther("100");
+
+        await expect(
+          vault.connect(user1).withdraw(amount, user1.address, user1.address)
+        ).to.be.revertedWithCustomError(vault, "EnforcedPause");
+      });
+
+      it("Should revert mint when paused", async function () {
+        const shares = ethers.parseEther("100");
+        await asset.connect(user2).approve(await vault.getAddress(), ethers.parseEther("1000"));
+
+        await expect(
+          vault.connect(user2).mint(shares, user2.address)
+        ).to.be.revertedWithCustomError(vault, "EnforcedPause");
+      });
+
+      it("Should revert redeem when paused", async function () {
+        const shares = ethers.parseEther("100");
+
+        await expect(
+          vault.connect(user1).redeem(shares, user1.address, user1.address)
+        ).to.be.revertedWithCustomError(vault, "EnforcedPause");
+      });
+    });
+
+    describe("View Functions When Paused", function () {
+      beforeEach(async function () {
+        await vault.connect(owner).pause();
+      });
+
+      it("Should allow totalAssets when paused", async function () {
+        const totalAssets = await vault.totalAssets();
+        expect(totalAssets).to.be.gt(0);
+      });
+
+      it("Should allow convertToShares when paused", async function () {
+        const shares = await vault.convertToShares(ethers.parseEther("100"));
+        expect(shares).to.be.gt(0);
+      });
+
+      it("Should allow convertToAssets when paused", async function () {
+        const assets = await vault.convertToAssets(ethers.parseEther("100"));
+        expect(assets).to.be.gt(0);
+      });
+
+      it("Should allow previewDeposit when paused", async function () {
+        const shares = await vault.previewDeposit(ethers.parseEther("100"));
+        expect(shares).to.be.gt(0);
+      });
+
+      it("Should allow balanceOf when paused", async function () {
+        const balance = await vault.balanceOf(user1.address);
+        expect(balance).to.be.gt(0);
+      });
+
+      it("Should allow isPaused when paused", async function () {
+        const paused = await vault.isPaused();
+        expect(paused).to.equal(true);
+      });
+    });
+
+    describe("Integration Tests", function () {
+      it("Should allow operations after unpause", async function () {
+        // Pause vault
+        await vault.connect(owner).pause();
+        expect(await vault.isPaused()).to.equal(true);
+
+        // Unpause vault
+        await vault.connect(owner).unpause();
+        expect(await vault.isPaused()).to.equal(false);
+
+        // Should allow deposit after unpause
+        const amount = ethers.parseEther("100");
+        await asset.connect(user2).approve(await vault.getAddress(), amount);
+        await expect(
+          vault.connect(user2).deposit(amount, user2.address)
+        ).to.not.be.reverted;
+      });
+
+      it("Should handle multiple pause/unpause cycles", async function () {
+        // First cycle
+        await vault.connect(owner).pause();
+        expect(await vault.isPaused()).to.equal(true);
+        await vault.connect(owner).unpause();
+        expect(await vault.isPaused()).to.equal(false);
+
+        // Second cycle
+        await vault.connect(owner).pause();
+        expect(await vault.isPaused()).to.equal(true);
+        await vault.connect(owner).unpause();
+        expect(await vault.isPaused()).to.equal(false);
+
+        // Operations should work
+        const amount = ethers.parseEther("50");
+        await asset.connect(user2).approve(await vault.getAddress(), amount);
+        await vault.connect(user2).deposit(amount, user2.address);
+        expect(await vault.balanceOf(user2.address)).to.be.gt(0);
+      });
+
+      it("Should preserve state across pause/unpause", async function () {
+        const balanceBefore = await vault.balanceOf(user1.address);
+        const totalAssetsBefore = await vault.totalAssets();
+
+        // Pause and unpause
+        await vault.connect(owner).pause();
+        await vault.connect(owner).unpause();
+
+        // State should be preserved
+        expect(await vault.balanceOf(user1.address)).to.equal(balanceBefore);
+        expect(await vault.totalAssets()).to.equal(totalAssetsBefore);
+      });
+    });
+  });
+});
