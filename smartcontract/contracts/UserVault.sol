@@ -557,7 +557,7 @@ contract UserVault is ERC20, IERC4626, Ownable {
      * @dev Only the vault owner can call this function
      * @param amount The amount of assets to deploy to Compound
      */
-    function deployToCompound(uint256 amount) external onlyOwner {
+    function deployToCompound(uint256 amount) external onlyOwner whenNotPaused {
         if (amount == 0) revert InvalidAmount();
         
         // Get Compound cToken address from factory
@@ -590,7 +590,7 @@ contract UserVault is ERC20, IERC4626, Ownable {
      * @dev Only the vault owner can call this function
      * @param amount The amount of assets to withdraw from Compound
      */
-    function withdrawFromCompound(uint256 amount) external onlyOwner {
+    function withdrawFromCompound(uint256 amount) external onlyOwner whenNotPaused {
         if (amount == 0) revert InvalidAmount();
         
         // Get Compound cToken address from factory
