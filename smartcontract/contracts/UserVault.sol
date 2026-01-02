@@ -238,7 +238,7 @@ contract UserVault is ERC20, IERC4626, Ownable {
         uint256 assets,
         address receiver,
         address owner
-    ) external override returns (uint256 shares) {
+    ) external override whenNotPaused returns (uint256 shares) {
         require(assets > 0, "UserVault: cannot withdraw 0");
         require(receiver != address(0), "UserVault: receiver is zero address");
         require(owner != address(0), "UserVault: owner is zero address");
@@ -270,7 +270,7 @@ contract UserVault is ERC20, IERC4626, Ownable {
         uint256 shares,
         address receiver,
         address owner
-    ) external override returns (uint256 assets) {
+    ) external override whenNotPaused returns (uint256 assets) {
         require(shares > 0, "UserVault: cannot redeem 0");
         require(receiver != address(0), "UserVault: receiver is zero address");
         require(owner != address(0), "UserVault: owner is zero address");
