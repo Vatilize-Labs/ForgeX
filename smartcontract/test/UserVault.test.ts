@@ -9,7 +9,6 @@ describe("UserVault", function () {
   let owner: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
-  let factory: SignerWithAddress; // Keep as signer for other tests, but we'll specific mock for compound tests
   let mockFactory: MockVaultFactory;
   let cToken: MockCompoundToken;
   let priceFeed: ChainlinkMock;
@@ -68,7 +67,7 @@ describe("UserVault", function () {
     });
 
     it("Should set the correct factory", async function () {
-      expect(await vault.factory()).to.equal(factory.address);
+      expect(await vault.factory()).to.equal(await mockFactory.getAddress());
     });
 
     it("Should set the correct name and symbol", async function () {
@@ -90,7 +89,7 @@ describe("UserVault", function () {
         UserVaultFactory.deploy(
           ethers.ZeroAddress,
           owner.address,
-          factory.address,
+          await mockFactory.getAddress(),
           VAULT_NAME,
           VAULT_SYMBOL,
           await priceFeed.getAddress()
@@ -118,7 +117,7 @@ describe("UserVault", function () {
         UserVaultFactory.deploy(
           await asset.getAddress(),
           owner.address,
-          factory.address,
+          await mockFactory.getAddress(),
           VAULT_NAME,
           VAULT_SYMBOL,
           ethers.ZeroAddress
@@ -788,6 +787,103 @@ describe("UserVault", function () {
         expect(await vault.balanceOf(user1.address)).to.equal(balanceBefore);
         expect(await vault.totalAssets()).to.equal(totalAssetsBefore);
       });
+    });
+  });
+
+  describe("Compound Integration", function () {
+    const depositAmount = ethers.parseEther("1000");
+
+    beforeEach(async function () {
+      // User1 deposits assets
+      await asset.connect(user1).approve(await vault.getAddress(), depositAmount);
+      await vault.connect(user1).deposit(depositAmount, user1.address);
+    });
+
+    it("Should allow owner to deploy assets to Compound", async function () {
+      const deployAmount = ethers.parseEther("500");
+      
+      // Check vault balance before
+      const vaultBalanceBefore = await asset.balanceOf(await vault.getAddress());
+      
+      await expect(vault.connect(owner).deployToCompound(deployAmount))
+        .to.emit(vault, "ProtocolDeployed")
+        .withArgs("Compound", deployAmount);
+
+      // Check balances
+      expect(await asset.balanceOf(await vault.getAddress())).to.equal(vaultBalanceBefore - deployAmount);
+      // Check cToken balance (mock mints 1:1 cTokens)
+      expect(await cToken.balanceOf(await vault.getAddress())).to.equal(deployAmount);
+    });
+
+    it("Should revert deployToCompound if non-owner", async function () {
+      const deployAmount = ethers.parseEther("500");
+      await expect(
+        vault.connect(user1).deployToCompound(deployAmount)
+      ).to.be.revertedWithCustomError(vault, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should revert deployToCompound on zero amount", async function () {
+      await expect(
+        vault.connect(owner).deployToCompound(0)
+      ).to.be.revertedWithCustomError(vault, "InvalidAmount");
+    });
+
+    it("Should revert deployToCompound on insufficient balance", async function () {
+      const tooMuch = depositAmount * 2n;
+      await expect(
+        vault.connect(owner).deployToCompound(tooMuch)
+      ).to.be.revertedWithCustomError(vault, "InsufficientBalance");
+    });
+
+    it("Should allow owner to withdraw assets from Compound", async function () {
+      const deployAmount = ethers.parseEther("500");
+      
+      // First deploy
+      await vault.connect(owner).deployToCompound(deployAmount);
+      
+      const vaultBalanceBefore = await asset.balanceOf(await vault.getAddress());
+
+      // Withdraw half
+      const withdrawAmount = ethers.parseEther("250");
+      await expect(vault.connect(owner).withdrawFromCompound(withdrawAmount))
+        .to.emit(vault, "ProtocolWithdrawn")
+        .withArgs("Compound", withdrawAmount);
+
+      // Check balances
+      expect(await asset.balanceOf(await vault.getAddress())).to.equal(vaultBalanceBefore + withdrawAmount);
+      // Check cToken balance reduced
+      expect(await cToken.balanceOf(await vault.getAddress())).to.equal(deployAmount - withdrawAmount);
+    });
+
+    it("Should revert withdrawFromCompound on zero amount", async function () {
+      await expect(
+        vault.connect(owner).withdrawFromCompound(0)
+      ).to.be.revertedWithCustomError(vault, "InvalidAmount");
+    });
+
+    it("Should revert withdrawFromCompound on insufficient deposited balance", async function () {
+      const deployAmount = ethers.parseEther("500");
+      await vault.connect(owner).deployToCompound(deployAmount);
+      
+      const tooMuch = ethers.parseEther("600");
+      await expect(
+        vault.connect(owner).withdrawFromCompound(tooMuch)
+      ).to.be.revertedWithCustomError(vault, "InsufficientBalance");
+    });
+    
+    it("Should get compound balance correctly", async function () {
+      const deployAmount = ethers.parseEther("500");
+      await vault.connect(owner).deployToCompound(deployAmount);
+      
+      expect(await vault.getCompoundBalance.staticCall()).to.equal(deployAmount);
+    });
+
+     it("Should handle totalAssets including Compound balance", async function () {
+      const deployAmount = ethers.parseEther("500");
+      await vault.connect(owner).deployToCompound(deployAmount);
+      
+      // totalAssets should still be equal to depositAmount (500 in vault + 500 in compound)
+      expect(await vault.totalAssets()).to.equal(depositAmount);
     });
   });
 });
