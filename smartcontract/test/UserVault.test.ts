@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { UserVault, MockERC20, ChainlinkMock } from "../typechain-types";
+import { UserVault, MockERC20, ChainlinkMock, MockCompoundToken, MockVaultFactory } from "../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("UserVault", function () {
@@ -9,7 +9,9 @@ describe("UserVault", function () {
   let owner: SignerWithAddress;
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
-  let factory: SignerWithAddress;
+  let factory: SignerWithAddress; // Keep as signer for other tests, but we'll specific mock for compound tests
+  let mockFactory: MockVaultFactory;
+  let cToken: MockCompoundToken;
   let priceFeed: ChainlinkMock;
 
   const INITIAL_MINT = ethers.parseEther("10000");
@@ -17,7 +19,7 @@ describe("UserVault", function () {
   const VAULT_SYMBOL = "svToken";
 
   beforeEach(async function () {
-    [owner, user1, user2, factory] = await ethers.getSigners();
+    [owner, user1, user2] = await ethers.getSigners();
 
     // Deploy mock ERC20 token
     const MockERC20Factory = await ethers.getContractFactory("MockERC20");
@@ -33,12 +35,22 @@ describe("UserVault", function () {
     priceFeed = await ChainlinkMockFactory.deploy(200000000000, 8); // $2000
     await priceFeed.waitForDeployment();
 
+    // Deploy MockCompoundToken (cToken)
+    const MockCompoundTokenFactory = await ethers.getContractFactory("MockCompoundToken");
+    cToken = await MockCompoundTokenFactory.deploy(await asset.getAddress());
+    await cToken.waitForDeployment();
+
+    // Deploy MockVaultFactory
+    const MockVaultFactoryFactory = await ethers.getContractFactory("MockVaultFactory");
+    mockFactory = await MockVaultFactoryFactory.deploy(await cToken.getAddress());
+    await mockFactory.waitForDeployment();
+
     // Deploy UserVault
     const UserVaultFactory = await ethers.getContractFactory("UserVault");
     vault = await UserVaultFactory.deploy(
       await asset.getAddress(),
       owner.address,
-      factory.address,
+      await mockFactory.getAddress(),
       VAULT_NAME,
       VAULT_SYMBOL,
       await priceFeed.getAddress()
