@@ -35,3 +35,15 @@
   - [x] Rewrite git history for all branches.
   - [x] Purge ghost PR objects from GitHub UI.
   - [x] Verify single contributor count.
+
+## 🦄 UHI8 Hookathon
+
+### Issue #6: Forge-Native Yield Hooks (Vult)
+**Status:** ✅ COMPLETED
+**Description:** Implement Uniswap v4 hooks to integrate ForgeX ERC-4626 vaults directly into liquidity pools on Base.
+- **Tasks:**
+  - [x] Correct real-time vault accounting in `UserVault`.
+  - [x] Implement `VultHook.sol` for Uniswap v4.
+  - [x] Add yield-direction logic in `afterAddLiquidity`.
+  - [x] Add interest harvesting and LP donation in `afterSwap`.
+  - [x] Unify branding to ForgeX Magenta theme.

@@ -745,9 +745,18 @@ Add comprehensive NatSpec documentation to all contracts, functions, and events.
 
 ---
 
-## ❌ Pending Issues
+### Issue #15: TotalAssets Real-Time Fix
+**Status:** ✅ COMPLETED
+**Description:** Fix `totalAssets()` to allow real-time yield tracking from Aave/Compound.
 
-### Issue #15: Deployment Scripts
+### Issue #16: Forge-Native Yield Hooks (Vult)
+**Status:** ✅ COMPLETED
+**Description:** Implement Uniswap v4 hooks to integrate ForgeX vaults with liquidity pools.
+- [x] Implement BaseHook for Vult logic
+- [x] Add `afterAddLiquidity` yield redirection
+- [x] Add `afterSwap` interest harvesting
+
+## ❌ Pending Issues
 
 ## 📝 Issue Template
 

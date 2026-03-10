@@ -14,7 +14,7 @@ import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.so
 
 /**
  * @title UserVault
- * @dev ERC-4626 compliant tokenized vault for SmartX platform
+ * @dev ERC-4626 compliant tokenized vault for ForgeX platform
  * @notice This contract allows users to deposit assets and receive vault shares
  * @dev Implements the ERC-4626 standard for tokenized vaults
  */
