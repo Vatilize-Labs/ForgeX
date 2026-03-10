@@ -27,9 +27,28 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            // https://docs.soliditylang.org/en/latest/using-the-compiler.html#optimizer-options
             runs: 200,
           },
+        },
+      },
+      {
+        version: "0.8.24",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+          viaIR: true,
+        },
+      },
+      {
+        version: "0.8.26",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+          viaIR: true,
         },
       },
     ],
@@ -125,6 +144,7 @@ const config: HardhatUserConfig = {
       mainnet: etherscanApiKey,
       sepolia: etherscanApiKey,
       base: etherscanApiKey,
+      baseSepolia: etherscanApiKey,
       celo: process.env.CELOSCAN_API_KEY || etherscanApiKey, // Celo uses Celoscan
       celoAlfajores: process.env.CELOSCAN_API_KEY || etherscanApiKey,
     },
