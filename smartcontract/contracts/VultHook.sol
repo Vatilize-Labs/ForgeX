@@ -106,7 +106,37 @@ contract VultHook is BaseHook {
         BalanceDelta delta,
         bytes calldata hookData
     ) external override returns (bytes4, int128) {
-        // Logic to donate yield to LPs
+        address vault0 = assetToVault[key.currency0.tokenAddress()];
+        address vault1 = assetToVault[key.currency1.tokenAddress()];
+
+        // Periodic harvesting logic (simplified for Hackathon)
+        // In a real scenario, we'd check if totalAssetsAccrued() > totalDeposited
+        if (vault0 != address(0)) {
+            uint256 currentAssets = IUserVault(vault0).totalAssets();
+            uint256 accruedAssets = IUserVault(vault0).totalAssetsAccrued();
+            
+            if (accruedAssets > currentAssets) {
+                uint256 yield = accruedAssets - currentAssets;
+                // Harvest interest
+                IUserVault(vault0).withdraw(yield, address(this), address(this));
+                // Donate to pool
+                poolManager.donate(key, yield, 0, "");
+            }
+        }
+
+        if (vault1 != address(0)) {
+            uint256 currentAssets = IUserVault(vault1).totalAssets();
+            uint256 accruedAssets = IUserVault(vault1).totalAssetsAccrued();
+            
+            if (accruedAssets > currentAssets) {
+                uint256 yield = accruedAssets - currentAssets;
+                // Harvest interest
+                IUserVault(vault1).withdraw(yield, address(this), address(this));
+                // Donate to pool
+                poolManager.donate(key, 0, yield, "");
+            }
+        }
+
         return (BaseHook.afterSwap.selector, 0);
     }
 
