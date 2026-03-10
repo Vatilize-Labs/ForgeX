@@ -120,6 +120,8 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 - **Chain ID:** 8453
 - **RPC URL:** `https://mainnet.base.org`
 - **Explorer:** [BaseScan](https://basescan.org/)
+- **VaultFactory:** [`0x8374257da04F00ABAf74E13EFE5A17B0f08EC226`](https://basescan.org/address/0x8374257da04F00ABAf74E13EFE5A17B0f08EC226)
+- **VultHook:** [`0xe988b6816d94C10377779F08f2ab08925cE96D09`](https://basescan.org/address/0xe988b6816d94C10377779F08f2ab08925cE96D09)
 
 ## Development
 

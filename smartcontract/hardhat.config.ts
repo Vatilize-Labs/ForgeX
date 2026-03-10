@@ -17,7 +17,7 @@ const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr2
 const deployerPrivateKey =
   process.env.ACCOUNT_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 // If not set, it uses our block explorers default API keys.
-const etherscanApiKey = process.env.ETHERSCAN_V2_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
+const etherscanApiKey = process.env.ETHERSCAN_V2_API_KEY || "GCI2VABZK42RXGZ26P5CKESAUJNE72QPY3";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -117,7 +117,7 @@ const config: HardhatUserConfig = {
       accounts: [deployerPrivateKey],
     },
     base: {
-      url: "https://mainnet.base.org",
+      url: process.env.BASE_MAINNET_RPC_URL || "https://main.base.org",
       chainId: 8453,
       accounts: [deployerPrivateKey],
     },

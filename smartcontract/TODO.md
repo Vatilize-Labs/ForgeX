@@ -755,6 +755,7 @@ Add comprehensive NatSpec documentation to all contracts, functions, and events.
 - [x] Implement BaseHook for Vult logic
 - [x] Add `afterAddLiquidity` yield redirection
 - [x] Add `afterSwap` interest harvesting
+- [x] Deploy to Base Mainnet (`0xe988b6816d94C10377779F08f2ab08925cE96D09`)
 
 ## ❌ Pending Issues
 

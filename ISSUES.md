@@ -47,3 +47,4 @@
   - [x] Add yield-direction logic in `afterAddLiquidity`.
   - [x] Add interest harvesting and LP donation in `afterSwap`.
   - [x] Unify branding to ForgeX Magenta theme.
+  - [x] Deploy to Base Mainnet.
