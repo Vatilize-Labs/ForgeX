@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     "@solana-program/system",
     "@solana-program/token",
   ],
-  turbopack: {},
+  // turbopack: {},
 };
 
 export default nextConfig;

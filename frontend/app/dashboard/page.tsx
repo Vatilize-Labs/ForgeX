@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAccount } from "wagmi";
-import { useUserVaults, useIsRegistered } from "@/hooks/useVaultFactory";
+import { useUserVaults, useIsRegistered, useUserInfo } from "@/hooks/useVaultFactory";
 import VaultCard from "@/components/VaultCard";
 import CreateVaultModal from "@/components/CreateVaultModal";
 import AIInsights from "@/components/AIInsights";
-import Link from "next/link";
+import RegisterForm from "@/components/RegisterForm";
 import Image from "next/image";
-import { Layers, Network, Cpu, Wallet, Plus, TrendingUp } from "lucide-react";
+import { Layers, Network, Cpu, Wallet, Plus, User } from "lucide-react";
 
 import type { Variants } from "framer-motion";
 const stagger: Variants = {
@@ -23,9 +23,14 @@ const item: Variants = {
 
 export default function Dashboard() {
   const { address, isConnected } = useAccount();
-  const { data: isRegistered } = useIsRegistered();
+  const { data: isRegistered, refetch: refetchRegistration } = useIsRegistered();
   const { data: userVaults, refetch: refetchVaults } = useUserVaults();
+  const { data: userInfo } = useUserInfo();
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const username = userInfo?.[0] ?? "";
+  const bio = userInfo?.[1] ?? "";
+  const registeredAt = userInfo?.[2] ? new Date(Number(userInfo[2]) * 1000) : null;
 
   /* ── Not connected ── */
   if (!isConnected) {
@@ -41,16 +46,12 @@ export default function Dashboard() {
     );
   }
 
-  /* ── Not registered ── */
+  /* ── Not registered — inline registration ── */
   if (!isRegistered) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen pt-20 px-6 gap-5 text-center">
         <Image src="/logo.svg" alt="ForgeX" width={48} height={48} />
-        <h2 style={{ color: "var(--foreground)", letterSpacing: "-0.03em" }} className="text-3xl font-black">
-          Not registered
-        </h2>
-        <p style={{ color: "var(--foreground-muted)" }}>You need to register before accessing the dashboard.</p>
-        <Link href="/" className="btn btn-primary">Go to Registration</Link>
+        <RegisterForm onSuccess={() => refetchRegistration()} />
       </div>
     );
   }
@@ -60,7 +61,6 @@ export default function Dashboard() {
   const STATS = [
     { label: "Total Vaults",  value: String(vaultCount),                icon: Layers,   color: "var(--primary)" },
     { label: "Network",       value: "Base",                            icon: Network,  color: "var(--primary)" },
-    { label: "Protocol",      value: "Vult",                            icon: TrendingUp, color: "var(--accent)" },
     { label: "Wallet",        value: address ? `${address.slice(0,6)}…${address.slice(-4)}` : "—",
                                                                         icon: Wallet,   color: "var(--foreground-muted)" },
   ];
@@ -69,11 +69,44 @@ export default function Dashboard() {
     <div className="min-h-screen pt-20">
       <div className="max-w-7xl mx-auto px-5 py-8">
 
-        {/* ── Page header ── */}
+        {/* ── User profile card ── */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
+          style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+          className="rounded-2xl p-5 flex items-center gap-4 mb-6"
+        >
+          <div
+            style={{ background: "var(--primary-muted)", borderRadius: 14, color: "var(--primary)" }}
+            className="w-14 h-14 flex items-center justify-center text-2xl font-black shrink-0"
+          >
+            {username ? username.charAt(0).toUpperCase() : <User size={24} />}
+          </div>
+          <div className="min-w-0">
+            <h3 style={{ color: "var(--foreground)", fontWeight: 900, fontSize: 20, letterSpacing: "-0.02em" }}>
+              {username || "User"}
+            </h3>
+            {bio && (
+              <p style={{ color: "var(--foreground-muted)", fontSize: 13 }}>{bio}</p>
+            )}
+            {registeredAt && (
+              <p style={{ color: "var(--foreground-dim)", fontSize: 11 }}>
+                Member since {registeredAt.toLocaleDateString()}
+              </p>
+            )}
+          </div>
+          <div className="ml-auto hidden sm:flex items-center gap-2">
+            <appkit-network-button />
+            <appkit-button size="sm" />
+          </div>
+        </motion.div>
+
+        {/* ── Page header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
           className="flex items-end justify-between mb-8"
         >
           <div>
@@ -95,7 +128,7 @@ export default function Dashboard() {
           variants={stagger}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+          className="grid grid-cols-3 gap-4 mb-8"
         >
           {STATS.map(({ label, value, icon: Icon, color }) => (
             <motion.div

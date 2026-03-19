@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useCreateVault } from "@/hooks/useVaultFactory";
 import { useToast } from "./Toast";
-import { WETH_ADDRESS } from "@/lib/constants";
+import { WETH_ADDRESS, USDC_ADDRESS, DAI_ADDRESS, USDT_ADDRESS } from "@/lib/constants";
 
 interface CreateVaultModalProps {
   isOpen: boolean;
@@ -13,6 +13,9 @@ interface CreateVaultModalProps {
 
 const ASSETS = [
   { name: "WETH", address: WETH_ADDRESS, symbol: "WETH" },
+  { name: "USDC", address: USDC_ADDRESS, symbol: "USDC" },
+  { name: "DAI",  address: DAI_ADDRESS,  symbol: "DAI" },
+  { name: "USDT", address: USDT_ADDRESS, symbol: "USDT" },
 ];
 
 export default function CreateVaultModal({ isOpen, onClose, onSuccess }: CreateVaultModalProps) {

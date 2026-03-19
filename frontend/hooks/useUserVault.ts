@@ -160,3 +160,67 @@ export function useVaultWithdraw(vaultAddress: `0x${string}`) {
 
   return { withdraw, isPending: isPending || isConfirming, isSuccess, error };
 }
+
+export function useDeployToAave(vaultAddress: `0x${string}`) {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const deploy = (amount: bigint) => {
+    writeContract({
+      address: vaultAddress,
+      abi: USER_VAULT_ABI,
+      functionName: "deployToAave",
+      args: [amount],
+    });
+  };
+
+  return { deploy, isPending: isPending || isConfirming, isSuccess, error };
+}
+
+export function useDeployToCompound(vaultAddress: `0x${string}`) {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const deploy = (amount: bigint) => {
+    writeContract({
+      address: vaultAddress,
+      abi: USER_VAULT_ABI,
+      functionName: "deployToCompound",
+      args: [amount],
+    });
+  };
+
+  return { deploy, isPending: isPending || isConfirming, isSuccess, error };
+}
+
+export function useWithdrawFromAave(vaultAddress: `0x${string}`) {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const withdraw = (amount: bigint) => {
+    writeContract({
+      address: vaultAddress,
+      abi: USER_VAULT_ABI,
+      functionName: "withdrawFromAave",
+      args: [amount],
+    });
+  };
+
+  return { withdraw, isPending: isPending || isConfirming, isSuccess, error };
+}
+
+export function useWithdrawFromCompound(vaultAddress: `0x${string}`) {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const withdraw = (amount: bigint) => {
+    writeContract({
+      address: vaultAddress,
+      abi: USER_VAULT_ABI,
+      functionName: "withdrawFromCompound",
+      args: [amount],
+    });
+  };
+
+  return { withdraw, isPending: isPending || isConfirming, isSuccess, error };
+}

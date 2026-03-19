@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRegisterUser } from "@/hooks/useVaultFactory";
 import { useToast } from "./Toast";
 
-export default function RegisterForm() {
+export default function RegisterForm({ onSuccess: onSuccessCallback }: { onSuccess?: () => void } = {}) {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const { register, isPending, isConfirming, isSuccess, error } = useRegisterUser();
@@ -13,6 +13,7 @@ export default function RegisterForm() {
   useEffect(() => {
     if (isSuccess) {
       showToast("Registration successful! Welcome to ForgeX.", "success");
+      onSuccessCallback?.();
     }
   }, [isSuccess]);
 
