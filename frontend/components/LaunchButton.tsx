@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { useAccount } from "wagmi";
-import { useAppKit } from "@reown/appkit/react";
 import { Zap } from "lucide-react";
+
+function openWalletModal() {
+  // Trigger the AppKit modal by clicking the existing appkit-button web component
+  const btn = document.querySelector("appkit-button");
+  if (btn) (btn as HTMLElement).click();
+}
 
 export default function LaunchButton() {
   const { isConnected } = useAccount();
-  const { open } = useAppKit();
 
   return (
     <div className="hidden sm:flex items-center gap-2.5">
@@ -40,7 +44,7 @@ export default function LaunchButton() {
         </Link>
       ) : (
         <button
-          onClick={() => open()}
+          onClick={openWalletModal}
           className="btn btn-outline text-xs px-4 py-2 flex items-center gap-1.5"
         >
           <Zap size={12} /> Launch App
