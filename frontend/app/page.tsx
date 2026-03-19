@@ -155,18 +155,12 @@ export default function Home() {
           </motion.div>
 
           {/* CTA */}
-          <motion.div variants={item} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <span style={{ color: "var(--foreground-muted)", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                Connect wallet to launch Vult
-              </span>
-              <div className="flex items-center gap-3 flex-wrap">
-                <appkit-button />
-                <Link href="#how-it-works" className="btn btn-outline text-sm flex items-center gap-2">
-                  How it works <ArrowRight size={13} />
-                </Link>
-              </div>
-            </div>
+          <motion.div variants={item} id="connect-cta" className="flex flex-col gap-3">
+            {/* appkit-button handles opening the wallet modal natively */}
+            <appkit-button label="Connect Wallet to Launch Vult" />
+            <Link href="#how-it-works" className="btn btn-outline text-sm flex items-center gap-2 w-fit">
+              How it works <ArrowRight size={13} />
+            </Link>
           </motion.div>
         </motion.div>
 

@@ -68,7 +68,7 @@ export default function Navbar() {
           </nav>
         )}
 
-        {/* Right: status dot + wallet button */}
+        {/* Right: status dot + launch app + wallet button */}
         <div className="flex items-center gap-3">
           {isConnected && (
             <span className="hidden sm:flex items-center gap-1.5 text-xs font-semibold" style={{ color: "var(--primary)" }}>
@@ -79,6 +79,27 @@ export default function Navbar() {
               Base
             </span>
           )}
+
+          {/* Launch App button */}
+          {isConnected ? (
+            <Link
+              href="/dashboard"
+              className="btn btn-primary text-xs px-4 py-2 hidden sm:flex items-center gap-1.5"
+            >
+              <Zap size={12} /> Launch App
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                const cta = document.getElementById("connect-cta");
+                if (cta) cta.scrollIntoView({ behavior: "smooth", block: "center" });
+              }}
+              className="btn btn-outline text-xs px-4 py-2 hidden sm:flex items-center gap-1.5"
+            >
+              <Zap size={12} /> Launch App
+            </button>
+          )}
+
           <appkit-button />
         </div>
       </div>
