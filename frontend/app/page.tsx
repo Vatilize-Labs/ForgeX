@@ -2,12 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useAccount } from "wagmi";
-import { useIsRegistered } from "@/hooks/useVaultFactory";
-import RegisterForm from "@/components/RegisterForm";
 import HeroIllustration from "@/components/HeroIllustration";
 import Link from "next/link";
 import Image from "next/image";
-import { Layers, Zap, Cpu, ArrowRight, Shield, TrendingUp, GitBranch } from "lucide-react";
+import { Layers, Zap, Cpu, ArrowRight, Shield, GitBranch } from "lucide-react";
 
 const FEATURES = [
   {
@@ -48,51 +46,8 @@ const item = {
 
 export default function Home() {
   const { isConnected } = useAccount();
-  const { data: isRegistered } = useIsRegistered();
 
-  /* ── Registered & connected ── */
-  if (isConnected && isRegistered) {
-    return (
-      <main className="flex flex-col items-center justify-center min-h-screen pt-20 px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-lg"
-        >
-          <div className="flex justify-center mb-6">
-            <Image src="/logo.svg" alt="ForgeX" width={56} height={56} />
-          </div>
-          <h1 style={{ color: "var(--foreground)", letterSpacing: "-0.04em" }}
-              className="text-4xl font-black mb-3">
-            Welcome back
-          </h1>
-          <p style={{ color: "var(--foreground-muted)" }} className="text-base mb-8">
-            Your vaults are active. Yield is stacking.
-          </p>
-          <div className="flex gap-3 justify-center flex-wrap">
-            <Link href="/dashboard" className="btn btn-primary flex items-center gap-2">
-              <TrendingUp size={15} /> Dashboard
-            </Link>
-            <Link href="/vaults" className="btn btn-outline flex items-center gap-2">
-              <Layers size={15} /> Vaults
-            </Link>
-          </div>
-        </motion.div>
-      </main>
-    );
-  }
-
-  /* ── Connected, not registered ── */
-  if (isConnected && !isRegistered) {
-    return (
-      <main className="flex flex-col items-center justify-center min-h-screen pt-20 px-6">
-        <RegisterForm />
-      </main>
-    );
-  }
-
-  /* ── Not connected — full landing ── */
+  /* ── Always show the full landing page ── */
   return (
     <div className="min-h-screen overflow-x-hidden">
 
@@ -156,8 +111,13 @@ export default function Home() {
 
           {/* CTA */}
           <motion.div variants={item} id="connect-cta" className="flex flex-col gap-3">
-            {/* appkit-button handles opening the wallet modal natively */}
-            <appkit-button label="Connect Wallet to Launch Vult" />
+            {isConnected ? (
+              <Link href="/dashboard" className="btn btn-primary text-sm flex items-center gap-2 w-fit">
+                <Zap size={14} /> Launch App
+              </Link>
+            ) : (
+              <appkit-button label="Connect Wallet to Launch Vult" />
+            )}
             <Link href="#how-it-works" className="btn btn-outline text-sm flex items-center gap-2 w-fit">
               How it works <ArrowRight size={13} />
             </Link>
