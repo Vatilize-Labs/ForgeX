@@ -186,9 +186,9 @@ The smart contract functions `deployToAave()` and `deployToCompound()` exist and
 
 ### High Priority
 
-1. **Multi-asset support** — Currently only WETH. Add USDC, DAI, USDT, ETH as vault assets with their respective Chainlink feeds
-2. **Protocol deployment UI** — No frontend controls to trigger `deployToAave()` / `deployToCompound()` yet. Users can create vaults and deposit but can't allocate to protocols from the UI
-3. **Dashboard user profile** — The username and short bio submitted during registration should be displayed on the dashboard. The data is already on-chain via `getUserInfo(address)` on VaultFactory — it just needs to be fetched by the user's connected wallet address and rendered in the dashboard UI
+1. ~~**Multi-asset support**~~ — **DONE.** USDC, DAI, USDT added alongside WETH in CreateVaultModal. Token addresses in `constants.ts`.
+2. ~~**Protocol deployment UI**~~ — **DONE.** VaultCard now has "Allocate" button with Deploy to Aave / Deploy to Compound / Withdraw from Aave / Withdraw from Compound. ABIs + hooks added.
+3. ~~**Dashboard user profile**~~ — **DONE.** Profile card at top of dashboard shows username, bio, member-since date fetched via `useUserInfo()`. Registration now inline in dashboard.
 4. **Vault analytics page** — Historical yield tracking, deposit/withdrawal history, performance charts
 5. **AI backend deployment** — Currently localhost:8000. Needs hosting (Railway, Fly.io, etc.) and the `NEXT_PUBLIC_AI_BACKEND_URL` env var set on Vercel
 
