@@ -28,11 +28,11 @@ Plus an **AI backend** powered by Claude that analyzes portfolios, recommends st
 
 3 core contracts deployed on Base Mainnet:
 
-| Contract | Address | Purpose |
-|---|---|---|
-| VaultFactory | `0x8374257da04F00ABAf74E13EFE5A17B0f08EC226` | User registration + vault deployment factory |
-| VultHook | `0xe988b6816d94C10377779F08f2ab08925cE96D09` | Uniswap v4 hook for yield harvesting |
-| Base PoolManager | `0x498581Ff718922c3f8e6A2444956aF099B2652b2` | Uniswap v4 reference |
+| Contract         | Address                                      | Purpose                                      |
+| ---------------- | -------------------------------------------- | -------------------------------------------- |
+| VaultFactory     | `0x8374257da04F00ABAf74E13EFE5A17B0f08EC226` | User registration + vault deployment factory |
+| VultHook         | `0xe988b6816d94C10377779F08f2ab08925cE96D09` | Uniswap v4 hook for yield harvesting         |
+| Base PoolManager | `0x498581Ff718922c3f8e6A2444956aF099B2652b2` | Uniswap v4 reference                         |
 
 ### VaultFactory.sol — Entry point for the protocol
 
@@ -107,14 +107,14 @@ LP gets swap fees ← VultHook donates yield back ← Vault earns lending intere
 
 ### Endpoints
 
-| Route | Method | Purpose |
-|---|---|---|
-| `/api/portfolio/{address}` | GET | Fetch on-chain portfolio via Web3.py |
-| `/api/strategy` | POST | AI yield strategy advice (conservative/balanced/aggressive) |
-| `/api/risk` | POST | AI risk assessment (score 1-10 + breakdown) |
-| `/api/chat` | POST | Conversational AI assistant with history |
-| `/api/insights` | POST | Dashboard bullet-point insights |
-| `/api/platform-stats` | GET | Platform-wide statistics |
+| Route                      | Method | Purpose                                                     |
+| -------------------------- | ------ | ----------------------------------------------------------- |
+| `/api/portfolio/{address}` | GET    | Fetch on-chain portfolio via Web3.py                        |
+| `/api/strategy`            | POST   | AI yield strategy advice (conservative/balanced/aggressive) |
+| `/api/risk`                | POST   | AI risk assessment (score 1-10 + breakdown)                 |
+| `/api/chat`                | POST   | Conversational AI assistant with history                    |
+| `/api/insights`            | POST   | Dashboard bullet-point insights                             |
+| `/api/platform-stats`      | GET    | Platform-wide statistics                                    |
 
 ### How it works
 
@@ -137,14 +137,60 @@ LP gets swap fees ← VultHook donates yield back ← Vault earns lending intere
 
 ---
 
+## How Deposits Flow Through the System
+
+When a user deposits WETH into their `UserVault`, those assets sit **idle** in the vault by default. The vault owner then decides where to allocate them:
+
+- **`deployToAave(amount)`** — sends WETH to Aave's lending pool, earns lending interest
+- **`deployToCompound(amount)`** — sends WETH to Compound's cToken, earns lending interest
+- **Keep idle** — assets stay in the vault, earning nothing
+
+### Where Does VultHook Fit?
+
+VultHook is **not something you "deploy to"** as a user. It works on the **Uniswap v4 pool side**, not the vault side. Here's the flow:
+
+```
+USER SIDE:                          UNISWAP SIDE:
+
+User deposits WETH into vault       LP adds liquidity to a Uniswap v4 pool
+  ↓                                   ↓
+Vault owner deploys to Aave/       VultHook.afterAddLiquidity() fires
+Compound for yield                    ↓
+  ↓                                 Hook moves pool assets into ForgeX vaults
+Vault earns lending interest          ↓
+  ↓                                 When someone swaps on the pool:
+totalAssetsAccrued > totalAssets      VultHook.afterSwap() detects accrued yield
+                                      ↓
+                                    Hook harvests yield, donates it back to LPs
+```
+
+So VultHook is a **passive automation layer** — it sits between Uniswap v4 pools and ForgeX vaults. LPs who provide liquidity to pools that use VultHook automatically get their idle liquidity routed into yield-generating vaults. No user action needed.
+
+### The "Protocol Deployment UI" Gap
+
+Right now on the frontend:
+
+- **You can:** connect wallet, register, create a vault, deposit WETH, withdraw WETH
+- **You cannot** (from the UI): tell the vault to actually send those deposited WETH to Aave or Compound
+
+The smart contract functions `deployToAave()` and `deployToCompound()` exist and work — they just don't have buttons in the frontend yet. So if you deposit 1 WETH into your vault today, it just sits there. You'd need the UI to say: "Allocate 0.5 WETH to Aave, 0.5 WETH to Compound" — that's the missing piece.
+
+### In Short
+
+- **No "deploy to Uniswap" needed** — VultHook handles that automatically at the pool level
+- **Deploy to Aave/Compound** — these are the manual protocol allocation choices the vault owner makes, and they need a frontend UI
+
+---
+
 ## What Can Be Added/Improved
 
 ### High Priority
 
-1. **Multi-asset support** — Currently only WETH. Add USDC, DAI, cbETH as vault assets with their respective Chainlink feeds
+1. **Multi-asset support** — Currently only WETH. Add USDC, DAI, USDT, ETH as vault assets with their respective Chainlink feeds
 2. **Protocol deployment UI** — No frontend controls to trigger `deployToAave()` / `deployToCompound()` yet. Users can create vaults and deposit but can't allocate to protocols from the UI
-3. **Vault analytics page** — Historical yield tracking, deposit/withdrawal history, performance charts
-4. **AI backend deployment** — Currently localhost:8000. Needs hosting (Railway, Fly.io, etc.) and the `NEXT_PUBLIC_AI_BACKEND_URL` env var set on Vercel
+3. **Dashboard user profile** — The username and short bio submitted during registration should be displayed on the dashboard. The data is already on-chain via `getUserInfo(address)` on VaultFactory — it just needs to be fetched by the user's connected wallet address and rendered in the dashboard UI
+4. **Vault analytics page** — Historical yield tracking, deposit/withdrawal history, performance charts
+5. **AI backend deployment** — Currently localhost:8000. Needs hosting (Railway, Fly.io, etc.) and the `NEXT_PUBLIC_AI_BACKEND_URL` env var set on Vercel
 
 ### Medium Priority
 
