@@ -199,11 +199,11 @@ The smart contract functions `deployToAave()` and `deployToCompound()` exist and
 
 ### Medium Priority
 
-5. **VultHook UI integration** — No frontend for viewing hook activity, yield harvests, or LP positions
-6. **Notification system** — Transaction confirmations beyond toasts; on-chain event listeners
-7. **Portfolio page** — Aggregate view across all vaults with total USD value, combined yield rate
-8. **Vault sharing** — Since shares are ERC-20, add transfer/delegation UI
-9. **Mobile responsiveness** — Mobile bottom nav exists but some components could be tighter
+5. ~~**VultHook UI integration**~~ — **DONE.** `/hook` page live with VultHook + PoolManager addresses (copyable), 3-step how-it-works explainer, hook flags grid, specs, live harvest note. Added to navbar.
+6. **Notification system** — Transaction confirmations beyond toasts; on-chain event listeners. (Toast system enhanced with `"tx"` type + basescan link + txHash param — partial.)
+7. ~~**Portfolio page**~~ — **DONE.** `/portfolio` aggregates all vaults: total USD, combined yield %, Aave/Compound/Idle allocation bar, per-vault table. Added to navbar.
+8. ~~**Vault sharing**~~ — **DONE.** VaultCard has `Share` button → recipient address + amount fields → calls ERC-20 `transfer()` on vault share token via `useTransferShares`.
+9. **Mobile responsiveness** — Mobile bottom nav exists; individual component tightening still possible.
 
 ### Nice to Have
 

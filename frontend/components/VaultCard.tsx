@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatEther, parseEther } from "viem";
-import { useVaultData, useVaultDeposit, useVaultWithdraw, useDeployToAave, useDeployToCompound, useWithdrawFromAave, useWithdrawFromCompound } from "@/hooks/useUserVault";
+import { useVaultData, useVaultDeposit, useVaultWithdraw, useDeployToAave, useDeployToCompound, useWithdrawFromAave, useWithdrawFromCompound, useTransferShares } from "@/hooks/useUserVault";
 import { useToast } from "./Toast";
 
 interface VaultCardProps {
@@ -18,6 +18,7 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
   const compoundDeploy = useDeployToCompound(vaultAddress);
   const aaveWithdraw = useWithdrawFromAave(vaultAddress);
   const compoundWithdraw = useWithdrawFromCompound(vaultAddress);
+  const shareTransfer = useTransferShares(vaultAddress);
   const { showToast } = useToast();
 
   const [depositAmount, setDepositAmount] = useState("");
@@ -26,6 +27,9 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [showAllocate, setShowAllocate] = useState(false);
   const [allocateAmount, setAllocateAmount] = useState("");
+  const [showShare, setShowShare] = useState(false);
+  const [shareRecipient, setShareRecipient] = useState("");
+  const [shareAmount, setShareAmount] = useState("");
   const [step, setStep] = useState<"idle" | "approving" | "depositing">("idle");
 
   // Handle deposit flow: approve then deposit
@@ -104,6 +108,20 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
     if (aaveWithdraw.error) showToast(`Aave withdraw failed: ${aaveWithdraw.error.message.slice(0, 80)}`, "error");
     if (compoundWithdraw.error) showToast(`Compound withdraw failed: ${compoundWithdraw.error.message.slice(0, 80)}`, "error");
   }, [aaveDeploy.error, compoundDeploy.error, aaveWithdraw.error, compoundWithdraw.error]);
+
+  useEffect(() => {
+    if (shareTransfer.isSuccess) {
+      showToast("Shares transferred!", "success");
+      setShareRecipient("");
+      setShareAmount("");
+      setShowShare(false);
+      vault.refetch();
+    }
+  }, [shareTransfer.isSuccess]);
+
+  useEffect(() => {
+    if (shareTransfer.error) showToast(`Transfer failed: ${shareTransfer.error.message.slice(0, 80)}`, "error");
+  }, [shareTransfer.error]);
 
   const handleDeposit = () => {
     if (!depositAmount || !vault.assetAddress) return;
@@ -272,24 +290,61 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
         </div>
       )}
 
-      <div className="flex gap-3 mt-4">
+      {/* Share Section */}
+      {showShare && (
+        <div className="mb-3 p-3 bg-black/30 rounded-xl space-y-2">
+          <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Transfer Shares</div>
+          <input
+            type="text"
+            placeholder="Recipient address (0x…)"
+            value={shareRecipient}
+            onChange={(e) => setShareRecipient(e.target.value)}
+            className="w-full p-3 rounded-lg bg-background border border-white/10 focus:border-primary outline-none text-sm font-mono"
+          />
+          <input
+            type="number"
+            placeholder="Share amount"
+            value={shareAmount}
+            onChange={(e) => setShareAmount(e.target.value)}
+            className="w-full p-3 rounded-lg bg-background border border-white/10 focus:border-primary outline-none text-sm"
+          />
+          <button
+            onClick={() => {
+              if (!shareRecipient || !shareAmount) return;
+              shareTransfer.transfer(shareRecipient as `0x${string}`, parseEther(shareAmount));
+            }}
+            disabled={!shareRecipient || !shareAmount || shareTransfer.isPending}
+            className="w-full py-2 bg-orange-500/20 border border-orange-500/30 text-orange-300 rounded-lg font-bold text-sm disabled:opacity-50 hover:bg-orange-500/30 transition-colors"
+          >
+            {shareTransfer.isPending ? "Transferring..." : "Confirm Transfer"}
+          </button>
+        </div>
+      )}
+
+      <div className="flex gap-2 mt-4 flex-wrap">
         <button
-          onClick={() => { setShowDeposit(!showDeposit); setShowWithdraw(false); setShowAllocate(false); }}
+          onClick={() => { setShowDeposit(!showDeposit); setShowWithdraw(false); setShowAllocate(false); setShowShare(false); }}
           className="flex-1 py-3 bg-primary/10 border border-primary/20 rounded-xl font-bold text-primary hover:bg-primary/20 transition-all text-sm"
         >
           Deposit
         </button>
         <button
-          onClick={() => { setShowWithdraw(!showWithdraw); setShowDeposit(false); setShowAllocate(false); }}
+          onClick={() => { setShowWithdraw(!showWithdraw); setShowDeposit(false); setShowAllocate(false); setShowShare(false); }}
           className="flex-1 py-3 bg-secondary/10 border border-secondary/20 rounded-xl font-bold text-secondary hover:bg-secondary/20 transition-all text-sm"
         >
           Withdraw
         </button>
         <button
-          onClick={() => { setShowAllocate(!showAllocate); setShowDeposit(false); setShowWithdraw(false); }}
+          onClick={() => { setShowAllocate(!showAllocate); setShowDeposit(false); setShowWithdraw(false); setShowShare(false); }}
           className="flex-1 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl font-bold text-blue-400 hover:bg-blue-500/20 transition-all text-sm"
         >
           Allocate
+        </button>
+        <button
+          onClick={() => { setShowShare(!showShare); setShowDeposit(false); setShowWithdraw(false); setShowAllocate(false); }}
+          className="flex-1 py-3 bg-orange-500/10 border border-orange-500/20 rounded-xl font-bold text-orange-400 hover:bg-orange-500/20 transition-all text-sm"
+        >
+          Share
         </button>
       </div>
     </div>

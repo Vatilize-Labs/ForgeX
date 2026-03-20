@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useIsRegistered } from "@/hooks/useVaultFactory";
-import { LayoutDashboard, Vault, BarChart2 } from "lucide-react";
+import { LayoutDashboard, Vault, BarChart2, Briefcase, Anchor } from "lucide-react";
 
 const LaunchButton = dynamic(() => import("./LaunchButton"), { ssr: false });
 
@@ -14,6 +14,8 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/vaults",    label: "Vaults",    icon: Vault },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
+  { href: "/portfolio", label: "Portfolio", icon: Briefcase },
+  { href: "/hook",      label: "VultHook",  icon: Anchor },
 ];
 
 export default function Navbar() {

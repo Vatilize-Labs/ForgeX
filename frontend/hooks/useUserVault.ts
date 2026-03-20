@@ -224,3 +224,32 @@ export function useWithdrawFromCompound(vaultAddress: `0x${string}`) {
 
   return { withdraw, isPending: isPending || isConfirming, isSuccess, error };
 }
+
+const TRANSFER_ABI = [
+  {
+    inputs: [
+      { internalType: "address", name: "to",     type: "address"  },
+      { internalType: "uint256", name: "amount", type: "uint256"  },
+    ],
+    name: "transfer",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+] as const;
+
+export function useTransferShares(vaultAddress: `0x${string}`) {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const transfer = (to: `0x${string}`, amount: bigint) => {
+    writeContract({
+      address: vaultAddress,
+      abi: TRANSFER_ABI,
+      functionName: "transfer",
+      args: [to, amount],
+    });
+  };
+
+  return { transfer, isPending: isPending || isConfirming, isSuccess, error };
+}
