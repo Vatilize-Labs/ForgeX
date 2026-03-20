@@ -130,7 +130,12 @@ LP gets swap fees ← VultHook donates yield back ← Vault earns lending intere
 
 - All 3 smart contracts written, tested (Hardhat + Foundry), and **deployed to Base Mainnet**
 - Full frontend with wallet connection, registration, vault creation, deposit/withdraw flows
-- AI backend with 4 analysis modes + chat
+- Multi-asset vault creation — WETH, USDC, DAI, USDT selectable
+- Protocol allocation UI — Deploy to / Withdraw from Aave and Compound directly from VaultCard
+- Dashboard user profile — username, bio, member-since date fetched on-chain via `getUserInfo()`
+- Inline registration flow in dashboard (no redirect to landing page)
+- Network switching — `<appkit-network-button />` for Base Mainnet ↔ Base Sepolia
+- AI backend with 4 analysis modes + chat — **deployed to Render** (`https://forgex-14vp.onrender.com`)
 - Complete UI redesign with olive green theme (`#8FA828`), custom SVG logo, Framer Motion animations
 - LaunchButton with connection status dot + modal trigger
 - Production build passing clean
@@ -190,7 +195,7 @@ The smart contract functions `deployToAave()` and `deployToCompound()` exist and
 2. ~~**Protocol deployment UI**~~ — **DONE.** VaultCard now has "Allocate" button with Deploy to Aave / Deploy to Compound / Withdraw from Aave / Withdraw from Compound. ABIs + hooks added.
 3. ~~**Dashboard user profile**~~ — **DONE.** Profile card at top of dashboard shows username, bio, member-since date fetched via `useUserInfo()`. Registration now inline in dashboard.
 4. **Vault analytics page** — Historical yield tracking, deposit/withdrawal history, performance charts
-5. **AI backend deployment** — Currently localhost:8000. Needs hosting (Railway, Fly.io, etc.) and the `NEXT_PUBLIC_AI_BACKEND_URL` env var set on Vercel
+5. ~~**AI backend deployment**~~ — **DONE.** Deployed to Render at `https://forgex-14vp.onrender.com`. `NEXT_PUBLIC_AI_BACKEND_URL` set in `.env.local` and Vercel env vars.
 
 ### Medium Priority
 
