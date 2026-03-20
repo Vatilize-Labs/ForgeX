@@ -41,13 +41,13 @@ export default function Navbar() {
           <Image
             src="/forgex-logo.png"
             alt="ForgeX logo"
-            width={36}
-            height={36}
+            width={72}
+            height={72}
             className="transition-transform duration-300 group-hover:scale-105"
           />
           <span
             style={{ letterSpacing: "0.16em", lineHeight: 1 }}
-            className="text-sm font-black uppercase"
+            className="text-2xl font-black uppercase"
           >
             <span style={{ color: "var(--primary)" }}>FORGEX</span>
             <span style={{ color: "var(--border-strong)" }} className="mx-1.5">:</span>
