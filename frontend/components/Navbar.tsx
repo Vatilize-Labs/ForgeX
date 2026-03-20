@@ -32,7 +32,7 @@ export default function Navbar() {
 
   return (
     <header
-      style={{ background: "rgba(9,10,6,0.80)", borderBottom: "1px solid var(--border)" }}
+      style={{ background: "color-mix(in srgb, var(--background) 80%, transparent)", borderBottom: "1px solid var(--border)" }}
       className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl"
     >
       <div className="max-w-7xl mx-auto px-5 h-20 flex items-center justify-between gap-6">
@@ -51,7 +51,7 @@ export default function Navbar() {
             className="text-2xl font-black uppercase"
           >
             <span style={{ color: "var(--primary)" }}>FORGEX</span>
-            <span style={{ color: "var(--border-strong)" }} className="mx-1.5">:</span>
+            <span style={{ color: "var(--foreground-muted)" }} className="mx-1.5">:</span>
             <span style={{ color: "var(--accent)" }}>VULT</span>
           </span>
         </Link>
