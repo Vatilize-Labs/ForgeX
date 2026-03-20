@@ -46,13 +46,21 @@ function shortHash(hash: string) {
 
 // ─── Skeleton row ─────────────────────────────────────────────────────────────
 function SkeletonRow() {
+  const cells = [
+    { cls: "",                        w: 72 },
+    { cls: "",                        w: 90 },
+    { cls: "",                        w: 60 },
+    { cls: "hidden sm:table-cell",    w: 60 },
+    { cls: "hidden md:table-cell",    w: 60 },
+    { cls: "",                        w: 90 },
+  ];
   return (
     <tr>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
+      {cells.map(({ cls, w }, i) => (
+        <td key={i} className={`px-4 py-3 ${cls}`}>
           <div
             className="rounded animate-pulse"
-            style={{ background: "var(--border)", height: 14, width: i === 0 ? 72 : i === 5 ? 90 : 60 }}
+            style={{ background: "var(--border)", height: 14, width: w }}
           />
         </td>
       ))}
@@ -322,13 +330,20 @@ export default function HistoryPage() {
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                      {["Type", "Vault", "Assets", "Shares", "Block", "Tx Hash"].map((col) => (
+                      {[
+                        { label: "Type",    cls: "" },
+                        { label: "Vault",   cls: "" },
+                        { label: "Assets",  cls: "" },
+                        { label: "Shares",  cls: "hidden sm:table-cell" },
+                        { label: "Block",   cls: "hidden md:table-cell" },
+                        { label: "Tx Hash", cls: "" },
+                      ].map(({ label, cls }) => (
                         <th
-                          key={col}
-                          className="px-4 py-3 text-left font-semibold whitespace-nowrap"
+                          key={label}
+                          className={`px-4 py-3 text-left font-semibold whitespace-nowrap ${cls}`}
                           style={{ color: "var(--foreground-dim)", fontSize: 11 }}
                         >
-                          {col}
+                          {label}
                         </th>
                       ))}
                     </tr>
@@ -415,13 +430,13 @@ export default function HistoryPage() {
                             {fmt(row.assets)}
                           </td>
 
-                          {/* Shares */}
-                          <td className="px-4 py-3 whitespace-nowrap" style={{ color: "var(--foreground-muted)" }}>
+                          {/* Shares — hidden on mobile */}
+                          <td className="px-4 py-3 whitespace-nowrap hidden sm:table-cell" style={{ color: "var(--foreground-muted)" }}>
                             {fmt(row.shares)}
                           </td>
 
-                          {/* Block */}
-                          <td className="px-4 py-3 whitespace-nowrap font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
+                          {/* Block — hidden on mobile + tablet */}
+                          <td className="px-4 py-3 whitespace-nowrap font-mono text-xs hidden md:table-cell" style={{ color: "var(--foreground-dim)" }}>
                             {row.blockNumber.toLocaleString()}
                           </td>
 

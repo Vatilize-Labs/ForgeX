@@ -8,6 +8,7 @@ import VaultCard from "@/components/VaultCard";
 import CreateVaultModal from "@/components/CreateVaultModal";
 import AIInsights from "@/components/AIInsights";
 import RegisterForm from "@/components/RegisterForm";
+import SecurityNotice from "@/components/SecurityNotice";
 import Image from "next/image";
 import { Layers, Network, Cpu, Wallet, Plus, User } from "lucide-react";
 
@@ -68,6 +69,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen pt-20">
       <div className="max-w-7xl mx-auto px-5 py-8">
+
+        <SecurityNotice />
 
         {/* ── User profile card ── */}
         <motion.div

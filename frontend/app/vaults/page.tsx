@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import { useUserVaults, useIsRegistered } from "@/hooks/useVaultFactory";
 import VaultCard from "@/components/VaultCard";
 import CreateVaultModal from "@/components/CreateVaultModal";
+import SecurityNotice from "@/components/SecurityNotice";
 import Link from "next/link";
 import Image from "next/image";
 import { Layers, Plus, Vault, ArrowRight } from "lucide-react";
@@ -56,6 +57,8 @@ export default function VaultsPage() {
   return (
     <div className="min-h-screen pt-20">
       <div className="max-w-7xl mx-auto px-5 py-8">
+
+        <SecurityNotice />
 
         {/* ── Page header ── */}
         <motion.div

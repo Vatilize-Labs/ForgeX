@@ -114,7 +114,7 @@ function VaultCompareColumn({ address, index }: VaultCompareColumnProps) {
   };
 
   return (
-    <motion.div variants={item} className="flex flex-col min-w-[180px]">
+    <motion.div variants={item} className="flex flex-col min-w-[150px] sm:min-w-[180px]">
       {/* Column header */}
       <div
         style={{
@@ -314,11 +314,15 @@ export default function ComparePage() {
 
         {/* ── Comparison grid ── */}
         <motion.div variants={item}>
-          <div className="overflow-x-auto rounded-2xl" style={{ border: "1px solid var(--border)" }}>
+          {/* Mobile scroll hint */}
+          <p className="flex items-center gap-1 text-xs mb-2 md:hidden" style={{ color: "var(--foreground-dim)" }}>
+            <span>←</span> Scroll horizontally to compare <span>→</span>
+          </p>
+          <div className="overflow-x-auto rounded-2xl" style={{ border: "1px solid var(--border)", WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
             <div className="flex min-w-max">
 
               {/* Leftmost label column */}
-              <div className="flex flex-col min-w-[180px] sticky left-0 z-20" style={{ background: "var(--card)" }}>
+              <div className="flex flex-col min-w-[140px] sm:min-w-[180px] sticky left-0 z-20" style={{ background: "var(--card)" }}>
                 {/* Header cell — matches column header height */}
                 <div
                   style={{
