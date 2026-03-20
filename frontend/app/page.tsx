@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { Layers, Zap, Cpu, ArrowRight, GitBranch } from "lucide-react";
+import { Layers, Zap, Cpu, ArrowRight, GitBranch, Radio, CircleDot } from "lucide-react";
 
 const FEATURES = [
   {
@@ -27,10 +27,10 @@ const FEATURES = [
 ];
 
 const STATS = [
-  { label: "Protocol", value: "Vult", sub: "ERC-4626" },
-  { label: "Network", value: "Base", sub: "Mainnet" },
-  { label: "Hook Version", value: "v1.0", sub: "Uniswap v4" },
-  { label: "Yield Sources", value: "2×", sub: "Vault + Fees" },
+  { icon: CircleDot, value: "Live",  label: "Deployed on Base Mainnet",   accent: "#22c55e" },
+  { icon: Layers,    value: "ERC-4626", label: "Tokenized Vault Standard",  accent: "var(--primary)" },
+  { icon: GitBranch, value: "v4 Hook",  label: "Uniswap v4 Native",         accent: "var(--primary)" },
+  { icon: Zap,       value: "2× Yield", label: "Lending + Swap Fees",       accent: "var(--primary)" },
 ];
 
 const stagger = {
@@ -199,21 +199,32 @@ export default function Home() {
 
       {/* ── Stats strip ── */}
       <section style={{ background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-7xl mx-auto px-5 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {STATS.map((s, i) => (
+        <div className="max-w-7xl mx-auto px-5 py-5 flex flex-col sm:flex-row items-stretch sm:items-center divide-y sm:divide-y-0 sm:divide-x"
+          style={{ "--tw-divide-color": "var(--border)" } as React.CSSProperties}
+        >
+          {STATS.map(({ icon: Icon, value, label, accent }, i) => (
             <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 10 }}
+              key={value}
+              initial={{ opacity: 0, y: 8 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.07, duration: 0.4 }}
-              className="flex flex-col gap-0.5"
+              transition={{ delay: i * 0.08, duration: 0.4 }}
+              className="flex items-center gap-3 flex-1 px-6 py-3 sm:py-0 first:pl-0 last:pr-0"
             >
-              <span className="label">{s.label}</span>
-              <span style={{ color: "var(--primary)", fontWeight: 900, fontSize: 22, letterSpacing: "-0.03em" }}>
-                {s.value}
-              </span>
-              <span style={{ color: "var(--foreground-muted)", fontSize: 11 }}>{s.sub}</span>
+              <div
+                style={{ background: `color-mix(in srgb, ${accent} 12%, transparent)`, borderRadius: 10 }}
+                className="w-9 h-9 flex items-center justify-center shrink-0"
+              >
+                <Icon size={16} style={{ color: accent }} />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span style={{ color: accent, fontWeight: 900, fontSize: 15, letterSpacing: "-0.02em", lineHeight: 1 }}>
+                  {value}
+                </span>
+                <span style={{ color: "var(--foreground-muted)", fontSize: 11, lineHeight: 1.3 }}>
+                  {label}
+                </span>
+              </div>
             </motion.div>
           ))}
         </div>
