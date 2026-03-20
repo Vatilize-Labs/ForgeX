@@ -16,18 +16,19 @@ const NAV_LINKS = [
   { href: "/vaults",    label: "Vaults",    icon: Vault },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
   { href: "/portfolio", label: "Portfolio", icon: Briefcase },
-  { href: "/compare",    label: "Compare",    icon: GitCompare },
-  { href: "/history",    label: "History",    icon: Clock },
-  { href: "/automation", label: "Automation", icon: Zap },
-  { href: "/hook",       label: "VultHook",   icon: Anchor },
+  { href: "/compare",   label: "Compare",   icon: GitCompare },
+  { href: "/history",   label: "History",   icon: Clock },
+  { href: "/automation",label: "Automation",icon: Zap },
+  { href: "/hook",      label: "VultHook",  icon: Anchor },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const { isConnected } = useAccount();
   const { data: isRegistered } = useIsRegistered();
-  const showNav = isConnected && isRegistered;
 
+  const isLanding = pathname === "/";
+  const showNav = isConnected && isRegistered && !isLanding;
 
   return (
     <header
@@ -55,9 +56,9 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Nav links */}
+        {/* Nav links — inner pages only, icons with active label below */}
         {showNav && (
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-end gap-1">
             {NAV_LINKS.map(({ href, label, icon: Icon }) => {
               const active = pathname === href;
               return (
@@ -66,26 +67,32 @@ export default function Navbar() {
                   href={href}
                   style={
                     active
-                      ? { background: "var(--primary-muted)", color: "var(--primary-hover)", borderColor: "rgba(143,168,40,0.22)" }
+                      ? { color: "var(--primary)", background: "var(--primary-muted)", borderColor: "rgba(143,168,40,0.22)" }
                       : { color: "var(--foreground-muted)", borderColor: "transparent" }
                   }
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-all duration-150 hover:text-[var(--foreground)] hover:bg-[var(--card)]"
+                  className="flex flex-col items-center px-3 py-2 rounded-lg border transition-all duration-150 hover:text-[var(--foreground)] hover:bg-[var(--card)] min-w-[44px]"
                 >
-                  <Icon size={14} />
-                  {label}
+                  <Icon size={16} />
+                  {active && (
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.04em", marginTop: 3, lineHeight: 1 }}>
+                      {label.toUpperCase()}
+                    </span>
+                  )}
                 </Link>
               );
             })}
           </nav>
         )}
 
-        {/* Right: theme toggle + launch app + wallet button */}
+        {/* Right: theme toggle + conditional buttons */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <LaunchButton />
-          {/* On landing page: show simple "Connected" pill when connected, full appkit-button otherwise */}
-          {/* On inner pages: always show full appkit-button for address/balance */}
-          {pathname === "/" && isConnected ? (
+
+          {/* LaunchButton only on landing page */}
+          {isLanding && <LaunchButton />}
+
+          {/* Connected pill (landing + connected) or appkit-button (inner pages / not connected) */}
+          {isLanding && isConnected ? (
             <span
               style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", color: "#22c55e" }}
               className="px-4 py-2 rounded-lg text-xs font-bold"
@@ -98,7 +105,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile nav */}
+      {/* Mobile nav — inner pages only */}
       {showNav && (
         <div
           style={{ borderTop: "1px solid var(--border)" }}
@@ -111,10 +118,14 @@ export default function Navbar() {
                 key={href}
                 href={href}
                 style={active ? { color: "var(--primary)" } : { color: "var(--foreground-muted)" }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold flex-1 justify-center transition-colors"
+                className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg flex-1 justify-center transition-colors"
               >
-                <Icon size={14} />
-                {label}
+                <Icon size={15} />
+                {active && (
+                  <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.04em", lineHeight: 1 }}>
+                    {label.toUpperCase()}
+                  </span>
+                )}
               </Link>
             );
           })}
