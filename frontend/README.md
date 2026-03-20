@@ -11,7 +11,7 @@
 
 Next.js 16.1.1 frontend for the ForgeX yield-native DeFi protocol on Base. 8 pages, real-time on-chain data, AI-powered insights, and a full dark/light olive green design system.
 
-**[Live App](YOUR_VERCEL_URL_HERE) · [Demo Video](YOUR_DEMO_VIDEO_LINK_HERE) · [Main Repo](https://github.com/BitBand-Labs/forgeX)**
+**[Live App](https://forgex-vult.vercel.app/) · [Demo Video](YOUR_DEMO_VIDEO_LINK_HERE) · [Main Repo](https://github.com/BitBand-Labs/forgeX)**
 
 </div>
 

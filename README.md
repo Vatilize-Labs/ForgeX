@@ -11,7 +11,7 @@
 [![ERC-4626](https://img.shields.io/badge/ERC--4626-Vaults-6366f1?style=flat-square)](https://eips.ethereum.org/EIPS/eip-4626)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-**[Demo Video](YOUR_DEMO_VIDEO_LINK_HERE) · [Pitch Deck](YOUR_PITCH_DECK_LINK_HERE) · [Live App](YOUR_VERCEL_URL_HERE) · [GitHub](https://github.com/BitBand-Labs/forgeX)**
+**Demo Video** (coming soon) · [Pitch Deck](https://docs.google.com/presentation/d/1BxzJ7kp0T9UA092X6j3Rze7UmorCeSYA/edit?usp=sharing&ouid=100528488557506058575&rtpof=true&sd=true) · [Live App](https://forgex-vult.vercel.app/) · [GitHub](https://github.com/BitBand-Labs/forgeX)
 
 </div>
 
@@ -99,10 +99,10 @@ sequenceDiagram
 
 ## Deployed Contracts — Base Mainnet
 
-| Contract | Address | Explorer |
-|----------|---------|----------|
-| **VaultFactory** | `0x8374257da04F00ABAf74E13EFE5A17B0f08EC226` | [View on BaseScan](https://basescan.org/address/0x8374257da04F00ABAf74E13EFE5A17B0f08EC226) |
-| **VultHook** | `0xe988b6816d94C10377779F08f2ab08925cE96D09` | [View on BaseScan](https://basescan.org/address/0xe988b6816d94C10377779F08f2ab08925cE96D09) |
+| Contract             | Address                                      | Explorer                                                                                    |
+| -------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **VaultFactory**     | `0x8374257da04F00ABAf74E13EFE5A17B0f08EC226` | [View on BaseScan](https://basescan.org/address/0x8374257da04F00ABAf74E13EFE5A17B0f08EC226) |
+| **VultHook**         | `0xe988b6816d94C10377779F08f2ab08925cE96D09` | [View on BaseScan](https://basescan.org/address/0xe988b6816d94C10377779F08f2ab08925cE96D09) |
 | **Base PoolManager** | `0x498581Ff718922c3f8e6A2444956aF099B2652b2` | [View on BaseScan](https://basescan.org/address/0x498581Ff718922c3f8e6A2444956aF099B2652b2) |
 
 ---
@@ -156,6 +156,7 @@ VultHook is a Uniswap v4 hook that intercepts pool lifecycle events:
 ### 3 — AI Strategy Engine
 
 The FastAPI backend reads on-chain data (vault balances, allocations, yield) via Web3.py and passes it to Claude Sonnet to generate:
+
 - **Insights** — what's happening across your vaults right now
 - **Strategy** — personalised allocation advice (conservative / balanced / aggressive)
 - **Risk** — risk score 1–10 with breakdown
@@ -165,27 +166,28 @@ The FastAPI backend reads on-chain data (vault balances, allocations, yield) via
 
 ## Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Smart Contracts | Solidity ^0.8.24, Hardhat, Foundry | ERC-4626 vaults + Uniswap v4 hook |
-| Standards | ERC-4626, ERC-20, [Uniswap v4 IHooks](https://github.com/Uniswap/v4-core/blob/main/src/interfaces/IHooks.sol) | Tokenized vaults + hook interface |
-| DeFi Integrations | Aave V3, Compound V2, Chainlink | Yield sources + USD price feeds |
-| Frontend | Next.js 16.1.1, React 19, TypeScript | App Router, SSR |
-| Styling | Tailwind CSS v4 | Olive green design system |
-| Web3 | Wagmi v3, Viem v2, Reown AppKit | Wallet + on-chain hooks |
-| Animations | Framer Motion | Page transitions, card reveals |
-| AI Backend | FastAPI, Python 3.11 | REST API layer |
-| AI Model | Anthropic Claude Sonnet 4 | Strategy, insights, risk, chat |
-| On-chain Reads | Web3.py | AI backend reads vault state |
-| Network | Base Mainnet (Chain ID 8453) | L2 deployment |
-| Frontend Deploy | Vercel | CI/CD, edge network |
-| Backend Deploy | Render | `https://forgex-14vp.onrender.com` |
+| Layer             | Technology                                                                                                    | Purpose                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Smart Contracts   | Solidity ^0.8.24, Hardhat, Foundry                                                                            | ERC-4626 vaults + Uniswap v4 hook  |
+| Standards         | ERC-4626, ERC-20, [Uniswap v4 IHooks](https://github.com/Uniswap/v4-core/blob/main/src/interfaces/IHooks.sol) | Tokenized vaults + hook interface  |
+| DeFi Integrations | Aave V3, Compound V2, Chainlink                                                                               | Yield sources + USD price feeds    |
+| Frontend          | Next.js 16.1.1, React 19, TypeScript                                                                          | App Router, SSR                    |
+| Styling           | Tailwind CSS v4                                                                                               | Olive green design system          |
+| Web3              | Wagmi v3, Viem v2, Reown AppKit                                                                               | Wallet + on-chain hooks            |
+| Animations        | Framer Motion                                                                                                 | Page transitions, card reveals     |
+| AI Backend        | FastAPI, Python 3.11                                                                                          | REST API layer                     |
+| AI Model          | Anthropic Claude Sonnet 4                                                                                     | Strategy, insights, risk, chat     |
+| On-chain Reads    | Web3.py                                                                                                       | AI backend reads vault state       |
+| Network           | Base Mainnet (Chain ID 8453)                                                                                  | L2 deployment                      |
+| Frontend Deploy   | Vercel                                                                                                        | CI/CD, edge network                |
+| Backend Deploy    | Render                                                                                                        | `https://forgex-14vp.onrender.com` |
 
 ---
 
 ## Features
 
 ### Smart Contracts
+
 - Multi-vault creation per user (unlimited vaults, each independently managed)
 - On-chain user registration: username, bio, member-since timestamp
 - ERC-4626 compliant: deposit / withdraw / mint / redeem with share price accounting
@@ -196,6 +198,7 @@ The FastAPI backend reads on-chain data (vault balances, allocations, yield) via
 - Pause / unpause emergency controls + `transferOwnership` governance
 
 ### Frontend (8 Pages)
+
 - **`/`** — Landing: hero, protocol stats, feature cards, wallet connect + registration
 - **`/dashboard`** — Vault grid, AI insights panel (Insights / Strategy / Risk tabs), user profile card
 - **`/vaults`** — Full vault management: Deposit, Withdraw, Allocate (Aave + Compound), Share tokens, Admin (owner only)
@@ -206,6 +209,7 @@ The FastAPI backend reads on-chain data (vault balances, allocations, yield) via
 - **`/automation`** — Chainlink Automation status per vault (`checkUpkeep`), 5-step registration guide
 
 ### AI Backend (7 Endpoints)
+
 - `GET  /api/portfolio/{address}` — live on-chain portfolio data
 - `POST /api/insights` — bullet-point dashboard insights
 - `POST /api/strategy` — yield strategy advice by risk profile
@@ -220,13 +224,13 @@ The FastAPI backend reads on-chain data (vault balances, allocations, yield) via
 
 ForgeX uses an **olive green** theme engineered for dark DeFi UX:
 
-| Token | Dark | Light | Usage |
-|-------|------|-------|-------|
-| `--primary` | `#8FA828` | `#6D8020` | CTAs, active states, badges |
-| `--background` | `#090A06` | `#F5F4EE` | Page background |
-| `--card` | `#181B0C` | `#E8E5D8` | Elevated surfaces |
-| `--foreground` | `#E8E2CF` | `#1A1C10` | Body text |
-| `--foreground-muted` | `#918E78` | `#5C5940` | Labels, secondary text |
+| Token                | Dark      | Light     | Usage                       |
+| -------------------- | --------- | --------- | --------------------------- |
+| `--primary`          | `#8FA828` | `#6D8020` | CTAs, active states, badges |
+| `--background`       | `#090A06` | `#F5F4EE` | Page background             |
+| `--card`             | `#181B0C` | `#E8E5D8` | Elevated surfaces           |
+| `--foreground`       | `#E8E2CF` | `#1A1C10` | Body text                   |
+| `--foreground-muted` | `#918E78` | `#5C5940` | Labels, secondary text      |
 
 Full light mode toggled via `ThemeToggle` in the navbar, persisted to `localStorage`.
 
@@ -267,6 +271,7 @@ uvicorn main:app --reload   # → http://localhost:8000
 ## Environment Variables
 
 ### Frontend — `frontend/.env.local`
+
 ```env
 # Required — get a project ID at https://cloud.reown.com
 NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id
@@ -276,6 +281,7 @@ NEXT_PUBLIC_AI_BACKEND_URL=https://forgex-14vp.onrender.com
 ```
 
 ### Smart Contracts — `smartcontract/.env`
+
 ```env
 PRIVATE_KEY=your_deployer_private_key
 BASE_RPC_URL=https://mainnet.base.org
@@ -284,6 +290,7 @@ ETHERSCAN_API_KEY=your_basescan_api_key
 ```
 
 ### AI Backend — `ai-backend/.env`
+
 ```env
 ANTHROPIC_API_KEY=sk-ant-...
 BASE_RPC_URL=https://mainnet.base.org
@@ -294,26 +301,26 @@ VAULT_FACTORY_ADDRESS=0x8374257da04F00ABAf74E13EFE5A17B0f08EC226
 
 ## Key Links
 
-| Resource | URL |
-|---------|-----|
-| Live App | [YOUR_VERCEL_URL_HERE] |
-| Demo Video | [YOUR_DEMO_VIDEO_LINK_HERE] |
-| Pitch Deck | [YOUR_PITCH_DECK_LINK_HERE] |
-| AI Backend | https://forgex-14vp.onrender.com |
-| GitHub | https://github.com/BitBand-Labs/forgeX |
+| Resource                | URL                                                                     |
+| ----------------------- | ----------------------------------------------------------------------- |
+| Live App                | [https://forgex-vult.vercel.app/](https://forgex-vult.vercel.app/) |
+| Demo Video              | YOUR_DEMO_VIDEO_LINK_HERE |
+| Pitch Deck              | [View Deck](https://docs.google.com/presentation/d/1BxzJ7kp0T9UA092X6j3Rze7UmorCeSYA/edit?usp=sharing&ouid=100528488557506058575&rtpof=true&sd=true) |
+| AI Backend              | https://forgex-14vp.onrender.com                                        |
+| GitHub                  | https://github.com/BitBand-Labs/forgeX                                  |
 | VaultFactory (BaseScan) | https://basescan.org/address/0x8374257da04F00ABAf74E13EFE5A17B0f08EC226 |
-| VultHook (BaseScan) | https://basescan.org/address/0xe988b6816d94C10377779F08f2ab08925cE96D09 |
-| Uniswap v4-core | https://github.com/Uniswap/v4-core |
-| Uniswap v4 Hook Docs | https://docs.uniswap.org/contracts/v4/overview |
+| VultHook (BaseScan)     | https://basescan.org/address/0xe988b6816d94C10377779F08f2ab08925cE96D09 |
+| Uniswap v4-core         | https://github.com/Uniswap/v4-core                                      |
+| Uniswap v4 Hook Docs    | https://docs.uniswap.org/contracts/v4/overview                          |
 
 ---
 
 ## Network
 
-| Network | Chain ID | RPC | Explorer |
-|---------|----------|-----|----------|
-| Base Mainnet | 8453 | `https://mainnet.base.org` | [basescan.org](https://basescan.org) |
-| Base Sepolia | 84532 | `https://sepolia.base.org` | [sepolia.basescan.org](https://sepolia.basescan.org) |
+| Network      | Chain ID | RPC                        | Explorer                                             |
+| ------------ | -------- | -------------------------- | ---------------------------------------------------- |
+| Base Mainnet | 8453     | `https://mainnet.base.org` | [basescan.org](https://basescan.org)                 |
+| Base Sepolia | 84532    | `https://sepolia.base.org` | [sepolia.basescan.org](https://sepolia.basescan.org) |
 
 ---
 
