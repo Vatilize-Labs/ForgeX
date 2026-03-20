@@ -160,9 +160,14 @@ export default function Home() {
       </section>
 
       {/* ── Stats strip ── */}
-      <section style={{ background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-5xl mx-auto px-10 py-5 flex flex-col sm:flex-row items-stretch sm:items-center divide-y sm:divide-y-0 sm:divide-x"
-          style={{ "--tw-divide-color": "var(--border)" } as React.CSSProperties}
+      <section className="px-6 md:px-16 py-6">
+        <div
+          className="max-w-5xl mx-auto px-10 py-5 flex flex-col sm:flex-row items-stretch sm:items-center divide-y sm:divide-y-0 sm:divide-x rounded-2xl"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            "--tw-divide-color": "var(--border)",
+          } as React.CSSProperties}
         >
           {STATS.map(({ icon: Icon, value, label, accent }, i) => (
             <motion.div
