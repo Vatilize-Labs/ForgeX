@@ -46,7 +46,7 @@ export default function Home() {
     <div className="min-h-screen overflow-x-hidden">
 
       {/* ── Hero ── */}
-      <section className="relative max-w-7xl mx-auto px-5 pt-44 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-screen">
+      <section className="relative max-w-7xl mx-auto px-5 pt-36 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center min-h-[85vh]">
 
         {/* Left copy */}
         <motion.div
@@ -143,10 +143,9 @@ export default function Home() {
               alt="VultHook"
               width={500}
               height={500}
-              className="rounded-3xl"
               style={{
                 objectFit: "cover",
-                boxShadow: "0 8px 64px rgba(143,168,40,0.28), 0 2px 16px rgba(0,0,0,0.7)",
+                borderRadius: 0,
               }}
               priority
             />
