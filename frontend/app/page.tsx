@@ -1,11 +1,10 @@
 'use client'
 
 import { motion } from "framer-motion";
-import { useAccount } from "wagmi";
 import HeroIllustration from "@/components/HeroIllustration";
 import Link from "next/link";
 import Image from "next/image";
-import { Layers, Zap, Cpu, ArrowRight, Shield, GitBranch } from "lucide-react";
+import { Layers, Zap, Cpu, ArrowRight, GitBranch } from "lucide-react";
 
 const FEATURES = [
   {
@@ -30,7 +29,7 @@ const FEATURES = [
 
 const STATS = [
   { label: "Protocol", value: "Vult", sub: "ERC-4626" },
-  { label: "Network", value: "Base", sub: "L2 · Ethereum" },
+  { label: "Network", value: "Base", sub: "Mainnet" },
   { label: "Hook Version", value: "v1.0", sub: "Uniswap v4" },
   { label: "Yield Sources", value: "2×", sub: "Vault + Fees" },
 ];
@@ -45,9 +44,6 @@ const item = {
 };
 
 export default function Home() {
-  const { isConnected } = useAccount();
-
-  /* ── Always show the full landing page ── */
   return (
     <div className="min-h-screen overflow-x-hidden">
 
@@ -61,13 +57,6 @@ export default function Home() {
           animate="show"
           className="relative z-10"
         >
-          {/* Badge */}
-          <motion.div variants={item} className="mb-6">
-            <span className="pill pill-primary">
-              <Zap size={10} />
-              VultHook · Base Mainnet
-            </span>
-          </motion.div>
 
           {/* Headline */}
           <motion.h1
@@ -90,35 +79,34 @@ export default function Home() {
             automated position. Two yield sources. One vault.
           </motion.p>
 
-          {/* Feature chips */}
-          <motion.div variants={item} className="flex flex-wrap gap-2 mb-10">
+          {/* Flow chips */}
+          <motion.div variants={item} className="flex flex-wrap items-center gap-2 mb-10">
             {[
-              { icon: Layers, label: "ERC-4626" },
-              { icon: GitBranch, label: "Uniswap v4 Hooks" },
+              { icon: Layers, label: "ERC-4626 Vaults" },
+              { icon: GitBranch, label: "Uniswap v4 Hook" },
               { icon: Cpu, label: "AI Analytics" },
-              { icon: Shield, label: "Base L2" },
-            ].map(({ icon: Icon, label }) => (
-              <div
-                key={label}
-                style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--foreground-muted)" }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold"
-              >
-                <Icon size={11} style={{ color: "var(--primary)" }} />
-                {label}
+            ].map(({ icon: Icon, label }, i, arr) => (
+              <div key={label} className="flex items-center gap-2">
+                <div
+                  style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--foreground-muted)" }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                >
+                  <Icon size={11} style={{ color: "var(--primary)" }} />
+                  {label}
+                </div>
+                {i < arr.length - 1 && (
+                  <ArrowRight size={13} style={{ color: "var(--primary)", opacity: 0.6 }} />
+                )}
               </div>
             ))}
           </motion.div>
 
           {/* CTA */}
-          <motion.div variants={item} id="connect-cta" className="flex flex-col gap-3">
-            {isConnected ? (
-              <Link href="/dashboard" className="btn btn-primary text-sm flex items-center gap-2 w-fit">
-                <Zap size={14} /> Launch App
-              </Link>
-            ) : (
-              <appkit-button label="Connect Wallet to Launch Vult" />
-            )}
-            <Link href="#how-it-works" className="btn btn-outline text-sm flex items-center gap-2 w-fit">
+          <motion.div variants={item} className="flex flex-wrap gap-3">
+            <Link href="/dashboard" className="btn btn-primary text-sm flex items-center gap-2">
+              <Zap size={14} /> Launch App
+            </Link>
+            <Link href="#how-it-works" className="btn btn-outline text-sm flex items-center gap-2">
               How it works <ArrowRight size={13} />
             </Link>
           </motion.div>
