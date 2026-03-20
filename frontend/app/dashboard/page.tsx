@@ -60,10 +60,9 @@ export default function Dashboard() {
   const vaultCount = userVaults?.length ?? 0;
 
   const STATS = [
-    { label: "Total Vaults",  value: String(vaultCount),                icon: Layers,   color: "var(--primary)" },
-    { label: "Network",       value: "Base",                            icon: Network,  color: "var(--primary)" },
-    { label: "Wallet",        value: address ? `${address.slice(0,6)}…${address.slice(-4)}` : "—",
-                                                                        icon: Wallet,   color: "var(--foreground-muted)" },
+    { label: "Total Vaults", value: String(vaultCount), icon: Layers,  color: "var(--primary)" },
+    { label: "Network",      value: "Base",             icon: Network, color: "var(--primary)" },
+    { label: "Wallet",       value: address ?? "—",     icon: Wallet,  color: "var(--foreground-muted)" },
   ];
 
   return (
@@ -81,27 +80,35 @@ export default function Dashboard() {
           className="rounded-2xl p-5 flex items-center gap-4 mb-6"
         >
           <div
-            style={{ background: "var(--primary-muted)", borderRadius: 14, color: "var(--primary)" }}
-            className="w-14 h-14 flex items-center justify-center text-2xl font-black shrink-0"
+            style={{ background: "var(--primary-muted)", borderRadius: 14 }}
+            className="w-14 h-14 flex items-center justify-center shrink-0"
           >
-            {username ? username.charAt(0).toUpperCase() : <User size={24} />}
+            <User size={26} style={{ color: "var(--primary)" }} />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h3 style={{ color: "var(--foreground)", fontWeight: 900, fontSize: 20, letterSpacing: "-0.02em" }}>
               {username || "User"}
             </h3>
             {bio && (
               <p style={{ color: "var(--foreground-muted)", fontSize: 13 }}>{bio}</p>
             )}
-            {registeredAt && (
-              <p style={{ color: "var(--foreground-dim)", fontSize: 11 }}>
-                Member since {registeredAt.toLocaleDateString()}
-              </p>
-            )}
           </div>
-          <div className="ml-auto hidden sm:flex items-center gap-2">
-            <appkit-network-button />
-            <appkit-button size="sm" />
+          <div className="ml-auto hidden sm:flex flex-col items-end gap-1 shrink-0">
+            {registeredAt && (
+              <>
+                <span style={{ color: "var(--foreground-dim)", fontSize: 10, fontWeight: 600, letterSpacing: "0.06em" }}>
+                  MEMBER SINCE
+                </span>
+                <span style={{ color: "var(--foreground-muted)", fontSize: 13, fontWeight: 700 }}>
+                  {registeredAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </span>
+              </>
+            )}
+            {address && (
+              <span style={{ color: "var(--foreground-dim)", fontSize: 10, fontFamily: "monospace", marginTop: 4 }}>
+                {address}
+              </span>
+            )}
           </div>
         </motion.div>
 
