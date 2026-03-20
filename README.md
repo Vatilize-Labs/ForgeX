@@ -147,9 +147,9 @@ Users register on-chain and deploy personal `UserVault` instances — ERC-4626 t
 
 VultHook is a Uniswap v4 hook that intercepts pool lifecycle events:
 
-- **`afterAddLiquidity`** — when LPs provide liquidity, idle capital is deposited into ForgeX vaults (deployed to Aave/Compound). Capital goes to work immediately.
-- **`beforeSwap`** — ensures the pool has enough liquid capital to execute the swap; rebalances from vaults if needed.
-- **`afterSwap`** — compares `totalAssetsAccrued()` vs `totalAssets()`. If the delta exceeds 1,000 wei, the accrued yield is harvested and donated to LPs via `poolManager.donate()`.
+- **[`_afterAddLiquidity`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L62)** — when LPs provide liquidity, idle capital is deposited into ForgeX vaults (deployed to Aave/Compound). Capital goes to work immediately.
+- **[`_beforeSwap`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L93)** — ensures the pool has enough liquid capital to execute the swap; rebalances from vaults if needed.
+- **[`_afterSwap`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L106)** — compares [`totalAssetsAccrued()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L185) vs [`totalAssets()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L173). If the delta exceeds 1,000 wei, the accrued yield is harvested and donated to LPs via `poolManager.donate()`.
 
 **Result:** LPs earn standard Uniswap swap fees **plus** the lending yield their idle capital generates between swaps.
 
@@ -168,7 +168,7 @@ The FastAPI backend reads on-chain data (vault balances, allocations, yield) via
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | Smart Contracts | Solidity ^0.8.24, Hardhat, Foundry | ERC-4626 vaults + Uniswap v4 hook |
-| Standards | ERC-4626, ERC-20, [Uniswap v4 IHooks](https://github.com/Uniswap/v4-core) | Tokenized vaults + hook interface |
+| Standards | ERC-4626, ERC-20, [Uniswap v4 IHooks](https://github.com/Uniswap/v4-core/blob/main/src/interfaces/IHooks.sol) | Tokenized vaults + hook interface |
 | DeFi Integrations | Aave V3, Compound V2, Chainlink | Yield sources + USD price feeds |
 | Frontend | Next.js 16.1.1, React 19, TypeScript | App Router, SSR |
 | Styling | Tailwind CSS v4 | Olive green design system |
@@ -191,7 +191,7 @@ The FastAPI backend reads on-chain data (vault balances, allocations, yield) via
 - ERC-4626 compliant: deposit / withdraw / mint / redeem with share price accounting
 - Aave V3 and Compound V2 allocation with single-function calls
 - Chainlink price feeds for manipulation-resistant USD valuations
-- VultHook: `afterAddLiquidity` → idle LP capital deployed; `afterSwap` → yield harvested → `donate()` to LPs
+- VultHook: [`afterAddLiquidity`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L62) → idle LP capital deployed; [`afterSwap`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L106) → yield harvested → `donate()` to LPs
 - Chainlink Automation compatible: `checkUpkeep` / `performUpkeep` for automated yield harvesting
 - Pause / unpause emergency controls + `transferOwnership` governance
 

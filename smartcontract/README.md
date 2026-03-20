@@ -115,13 +115,13 @@ Central registry. Manages user registration and vault deployment. One factory, m
 
 | Function | Visibility | Description |
 |----------|-----------|-------------|
-| `registerUser(username, bio)` | external | Register an on-chain user profile |
-| `createVault(asset, name, symbol)` | external | Deploy a new `UserVault` for the caller |
-| `getUserVaults(user)` | view | Returns `address[]` of all vaults for a user |
-| `getUserInfo(user)` | view | Returns `username, bio, registeredAt` |
-| `isUserRegistered(user)` | view | Returns `bool` registration status |
-| `addAdmin(address)` | onlyOwner | Grant admin role |
-| `removeAdmin(address)` | onlyOwner | Revoke admin role |
+| [`registerUser(username, bio)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/VaultFactory.sol#L208) | external | Register an on-chain user profile |
+| [`createVault(asset, name, symbol)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/VaultFactory.sol#L264) | external | Deploy a new `UserVault` for the caller |
+| [`getUserVaults(user)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/VaultFactory.sol#L384) | view | Returns `address[]` of all vaults for a user |
+| [`getUserInfo(user)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/VaultFactory.sol#L328) | view | Returns `username, bio, registeredAt` |
+| [`isUserRegistered(user)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/VaultFactory.sol#L316) | view | Returns `bool` registration status |
+| [`addAdmin(address)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/VaultFactory.sol#L431) | onlyOwner | Grant admin role |
+| [`removeAdmin(address)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/VaultFactory.sol#L444) | onlyOwner | Revoke admin role |
 
 **Events:**
 ```solidity
@@ -139,47 +139,40 @@ Each user gets their own `UserVault` instance. Fully ERC-4626 compliant with mul
 
 | Function | Description |
 |----------|-------------|
-| `deposit(assets, receiver)` | Deposit assets, receive proportional shares |
-| `withdraw(assets, receiver, owner)` | Withdraw assets, burn shares |
-| `mint(shares, receiver)` | Mint exact share count |
-| `redeem(shares, receiver, owner)` | Redeem shares for assets |
-| `totalAssets()` | Total assets under management |
-| `convertToShares(assets)` | Preview share count for asset amount |
-| `convertToAssets(shares)` | Preview asset amount for share count |
-| `previewDeposit/Withdraw/Mint/Redeem` | EIP-4626 preview functions |
+| [`deposit(assets, receiver)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L211) | Deposit assets, receive proportional shares |
+| [`withdraw(assets, receiver, owner)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L261) | Withdraw assets, burn shares |
+| [`mint(shares, receiver)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L236) | Mint exact share count |
+| [`redeem(shares, receiver, owner)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L293) | Redeem shares for assets |
+| [`totalAssets()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L173) | Total assets under management (vault + Aave + Compound) |
+| [`convertToShares(assets)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L329) | Preview share count for asset amount |
+| [`convertToAssets(shares)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L336) | Preview asset amount for share count |
+| `previewDeposit/Withdraw/Mint/Redeem` | EIP-4626 preview functions (L371–L394) |
 
 **Protocol Allocation:**
 
 | Function | Description |
 |----------|-------------|
-| `deployToAave(amount)` | Supply assets to Aave V3 lending pool |
-| `deployToCompound(amount)` | Mint Compound cTokens |
-| `withdrawFromAave(amount)` | Redeem from Aave |
-| `withdrawFromCompound(amount)` | Redeem cTokens from Compound |
-| `getAaveBalance()` | Assets currently in Aave |
-| `getCompoundBalance()` | Assets currently in Compound |
-| `totalAssetsAccrued()` | Total assets including all accrued interest |
+| [`deployToAave(amount)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L661) | Supply assets to Aave V3 lending pool |
+| [`deployToCompound(amount)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L582) | Mint Compound cTokens |
+| [`withdrawFromAave(amount)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L691) | Redeem from Aave |
+| [`withdrawFromCompound(amount)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L615) | Redeem cTokens from Compound |
+| [`getAaveBalance()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L717) | Assets currently tracked in Aave |
+| [`getCompoundBalance()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L644) | Live balance from Compound (triggers accrual) |
+| [`totalAssetsAccrued()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L185) | Total assets including all accrued interest |
 
 **Chainlink USD Valuations:**
 
 | Function | Description |
 |----------|-------------|
-| `getTotalValueUSD()` | Total vault value in USD (18 decimals) |
-| `getSharePriceUSD()` | Per-share price in USD |
-| `getAssetPriceUSD()` | Underlying asset spot price in USD |
-
-**Chainlink Automation:**
-
-| Function | Description |
-|----------|-------------|
-| `checkUpkeep(bytes calldata)` | Returns `(bool upkeepNeeded, bytes memory)` — view, safe to call off-chain |
-| `performUpkeep(bytes calldata)` | Executes automated yield rebalancing |
+| [`getTotalValueUSD()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L416) | Total vault value in USD (18 decimals) |
+| [`getSharePriceUSD()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L428) | Per-share price in USD |
+| [`getAssetPriceUSD()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L404) | Underlying asset spot price from Chainlink feed |
 
 **Admin:**
 
 | Function | Description |
 |----------|-------------|
-| `pause()` / `unpause()` | Emergency circuit breaker |
+| [`pause()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L736) / [`unpause()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L746) | Emergency circuit breaker |
 | `transferOwnership(newOwner)` | Governance — standard Ownable |
 | `owner()` | Returns current vault owner |
 
@@ -195,10 +188,11 @@ Integrates with Uniswap v4's hook architecture. Deployed at an address with the 
 
 | Function | Called By | Description |
 |----------|-----------|-------------|
-| `afterAddLiquidity(...)` | PoolManager | Deposits idle LP capital to ForgeX vaults |
-| `beforeSwap(...)` | PoolManager | Ensures adequate liquidity for the swap |
-| `afterSwap(...)` | PoolManager | Harvests yield delta, calls `poolManager.donate()` |
-| `getHookPermissions()` | PoolManager | Returns active hook flags bitmask |
+| [`_afterAddLiquidity(...)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L62) | PoolManager | Deposits idle LP capital into ForgeX vaults |
+| [`_beforeSwap(...)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L93) | PoolManager | Ensures adequate liquidity for the swap |
+| [`_afterSwap(...)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L106) | PoolManager | Computes yield delta → `poolManager.donate()` to LPs |
+| [`getHookPermissions()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L40) | PoolManager | Returns active hook flags bitmask |
+| [`setVaultForAsset(asset, vault)`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L151) | admin | Registers a ForgeX vault for a pool token address |
 
 **Constructor Parameters:**
 - `IPoolManager _poolManager` — Uniswap v4 PoolManager (`0x498581Ff718922c3f8e6A2444956aF099B2652b2`)
