@@ -201,11 +201,14 @@ def fetch_vault_data(vault_address: str) -> dict:
     }
 
     for key, (fn_name, args) in calls.items():
-        try:
-            result = getattr(vault.functions, fn_name)(*args).call()
-            data[key] = result if isinstance(result, (str, bool)) else int(result)
-        except Exception:
-            data[key] = None
+        for attempt in range(2):  # Retry once on failure
+            try:
+                result = getattr(vault.functions, fn_name)(*args).call()
+                data[key] = result if isinstance(result, (str, bool)) else int(result)
+                break
+            except Exception:
+                if attempt == 1:
+                    data[key] = None
 
     # Resolve asset decimals
     asset_addr = data.get("asset")

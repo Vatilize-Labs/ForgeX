@@ -117,8 +117,12 @@ def _format_vault_state(vaults_data: list[dict]) -> str:
         aave_pct = (aave / total * 100) if total and total > 0 and aave else 0
         compound_pct = (compound / total * 100) if total and total > 0 and compound else 0
 
+        asset_addr = v.get('asset')
+        if not asset_addr or asset_addr == "0x0000000000000000000000000000000000000000":
+            continue  # Skip vaults with no asset configured
+
         lines.append(f"=== Vault #{i}: {v['address']} ===")
-        lines.append(f"  Asset: {v.get('asset', 'Unknown')}")
+        lines.append(f"  Asset: {asset_addr}")
         lines.append(f"  Total Assets: {fmt(total)}")
         lines.append(f"  Aave Deployed: {fmt(aave)} ({aave_pct:.1f}%)")
         lines.append(f"  Compound Deployed: {fmt(compound)} ({compound_pct:.1f}%)")

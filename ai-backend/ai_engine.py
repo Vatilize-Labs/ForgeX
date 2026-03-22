@@ -58,8 +58,12 @@ def _format_vault_context(portfolio: dict) -> str:
         if total_assets is not None:
             idle = total_assets - (aave_bal or 0) - (compound_bal or 0)
 
+        asset_addr = v.get('asset')
+        if not asset_addr or asset_addr == "0x0000000000000000000000000000000000000000":
+            continue  # Skip vaults with no asset configured
+
         lines.append(f"--- Vault #{i}: {v['address'][:10]}... ---")
-        lines.append(f"  Asset: {v.get('asset', 'Unknown')}")
+        lines.append(f"  Asset: {asset_addr}")
         lines.append(f"  Total Assets: {fmt(total_assets)}")
         lines.append(f"  Total Accrued (with yield): {fmt(total_accrued)}")
         lines.append(f"  Aave Deployed: {fmt(aave_bal)}")
