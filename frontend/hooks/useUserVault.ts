@@ -1,8 +1,8 @@
 "use client";
 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseEther } from "viem";
 import { USER_VAULT_ABI, ERC20_ABI } from "@/lib/abis";
+import { TOKEN_META } from "@/lib/constants";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as `0x${string}`;
 
@@ -34,6 +34,20 @@ export function useVaultData(vaultAddress: `0x${string}`) {
     address: vaultAddress,
     abi: USER_VAULT_ABI,
     functionName: "asset",
+    query: { enabled: !!vaultAddress },
+  });
+
+  const vaultName = useReadContract({
+    address: vaultAddress,
+    abi: USER_VAULT_ABI,
+    functionName: "name",
+    query: { enabled: !!vaultAddress },
+  });
+
+  const vaultSymbol = useReadContract({
+    address: vaultAddress,
+    abi: USER_VAULT_ABI,
+    functionName: "symbol",
     query: { enabled: !!vaultAddress },
   });
 
@@ -80,11 +94,18 @@ export function useVaultData(vaultAddress: `0x${string}`) {
     query: { enabled: !!vaultAddress, refetchInterval: 30_000 },
   });
 
+  const assetAddr = asset.data as string | undefined;
+  const assetDecimals = assetAddr ? (TOKEN_META[assetAddr.toLowerCase()]?.decimals ?? 18) : 18;
+
   return {
+    name: vaultName.data as string | undefined,
+    symbol: vaultSymbol.data as string | undefined,
     totalAssets: totalAssets.data,
     totalAssetsAccrued: totalAssetsAccrued.data,
     totalSupply: totalSupply.data,
     assetAddress: asset.data,
+    assetDecimals,
+    assetSymbol: assetAddr ? (TOKEN_META[assetAddr.toLowerCase()]?.symbol ?? "TOKEN") : "TOKEN",
     isPaused: isPaused.data,
     userShares: userShares.data,
     aaveBalance: aaveBalance.data,

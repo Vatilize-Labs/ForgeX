@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatEther, parseEther } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { useVaultData, useVaultDeposit, useVaultWithdraw, useDeployToAave, useDeployToCompound, useWithdrawFromAave, useWithdrawFromCompound, useTransferShares } from "@/hooks/useUserVault";
 import { useToast } from "./Toast";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
@@ -49,11 +49,13 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
   const [newOwner, setNewOwner] = useState("");
   const [step, setStep] = useState<"idle" | "approving" | "depositing">("idle");
 
+  const decimals = vault.assetDecimals;
+
   // Handle deposit flow: approve then deposit
   useEffect(() => {
     if (deposit.approveConfirmed && step === "approving") {
       setStep("depositing");
-      const amount = parseEther(depositAmount);
+      const amount = parseUnits(depositAmount, decimals);
       deposit.deposit(amount);
     }
   }, [deposit.approveConfirmed]);
@@ -151,24 +153,26 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
 
   const handleDeposit = () => {
     if (!depositAmount || !vault.assetAddress) return;
-    const amount = parseEther(depositAmount);
+    const amount = parseUnits(depositAmount, decimals);
     setStep("approving");
     deposit.approve(vault.assetAddress as `0x${string}`, amount);
   };
 
   const handleWithdraw = () => {
     if (!withdrawAmount) return;
-    withdraw.withdraw(parseEther(withdrawAmount));
+    withdraw.withdraw(parseUnits(withdrawAmount, decimals));
   };
 
+  // USD values from the contract are always 18 decimals
   const formatUSD = (val: bigint | undefined) => {
     if (!val) return "$0.00";
-    return `$${Number(formatEther(val)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `$${Number(formatUnits(val, 18)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
+  // Token amounts use the asset's actual decimals
   const formatTokens = (val: bigint | undefined) => {
     if (!val) return "0";
-    return Number(formatEther(val)).toLocaleString(undefined, { maximumFractionDigits: 4 });
+    return Number(formatUnits(val, decimals)).toLocaleString(undefined, { maximumFractionDigits: 4 });
   };
 
   const anyPending = aaveDeploy.isPending || compoundDeploy.isPending || aaveWithdraw.isPending || compoundWithdraw.isPending;
@@ -177,7 +181,7 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
     <div className="p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-primary/30 transition-all group">
       <div className="flex justify-between items-start mb-4">
         <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary font-bold text-lg">
-          V{index + 1}
+          {vault.symbol ?? `V${index + 1}`}
         </div>
         <div className="text-right">
           <div className="text-xs font-mono text-gray-500 bg-black/20 px-3 py-1 rounded-full group-hover:text-primary transition-colors">
@@ -189,7 +193,8 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
         </div>
       </div>
 
-      <h3 className="text-xl font-black mb-1">ERC-4626 Vault</h3>
+      <h3 className="text-xl font-black mb-1">{vault.name ?? "ERC-4626 Vault"}</h3>
+      <p className="text-xs text-gray-500 mb-1">Asset: <span className="text-gray-300 font-bold">{vault.assetSymbol}</span></p>
 
       <div className="grid grid-cols-2 gap-3 my-4 text-sm">
         <div className="bg-black/20 rounded-xl p-3">
@@ -273,14 +278,14 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
           />
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => { if (allocateAmount) aaveDeploy.deploy(parseEther(allocateAmount)); }}
+              onClick={() => { if (allocateAmount) aaveDeploy.deploy(parseUnits(allocateAmount, decimals)); }}
               disabled={!allocateAmount || anyPending}
               className="py-2 bg-purple-500/20 border border-purple-500/30 text-purple-300 rounded-lg font-bold text-xs disabled:opacity-50 hover:bg-purple-500/30 transition-colors"
             >
               {aaveDeploy.isPending ? "Deploying..." : "Deploy to Aave"}
             </button>
             <button
-              onClick={() => { if (allocateAmount) compoundDeploy.deploy(parseEther(allocateAmount)); }}
+              onClick={() => { if (allocateAmount) compoundDeploy.deploy(parseUnits(allocateAmount, decimals)); }}
               disabled={!allocateAmount || anyPending}
               className="py-2 bg-green-500/20 border border-green-500/30 text-green-300 rounded-lg font-bold text-xs disabled:opacity-50 hover:bg-green-500/30 transition-colors"
             >
@@ -294,7 +299,7 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
               <div className="grid grid-cols-2 gap-2">
                 {vault.aaveBalance && vault.aaveBalance > 0n && (
                   <button
-                    onClick={() => { if (allocateAmount) aaveWithdraw.withdraw(parseEther(allocateAmount)); }}
+                    onClick={() => { if (allocateAmount) aaveWithdraw.withdraw(parseUnits(allocateAmount, decimals)); }}
                     disabled={!allocateAmount || anyPending}
                     className="py-2 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-lg font-bold text-xs disabled:opacity-50 hover:bg-purple-500/20 transition-colors"
                   >
@@ -303,7 +308,7 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
                 )}
                 {vault.compoundBalance && vault.compoundBalance > 0n && (
                   <button
-                    onClick={() => { if (allocateAmount) compoundWithdraw.withdraw(parseEther(allocateAmount)); }}
+                    onClick={() => { if (allocateAmount) compoundWithdraw.withdraw(parseUnits(allocateAmount, decimals)); }}
                     disabled={!allocateAmount || anyPending}
                     className="py-2 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg font-bold text-xs disabled:opacity-50 hover:bg-green-500/20 transition-colors"
                   >
@@ -337,7 +342,7 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
           <button
             onClick={() => {
               if (!shareRecipient || !shareAmount) return;
-              shareTransfer.transfer(shareRecipient as `0x${string}`, parseEther(shareAmount));
+              shareTransfer.transfer(shareRecipient as `0x${string}`, parseUnits(shareAmount, 18));
             }}
             disabled={!shareRecipient || !shareAmount || shareTransfer.isPending}
             className="w-full py-2 bg-orange-500/20 border border-orange-500/30 text-orange-300 rounded-lg font-bold text-sm disabled:opacity-50 hover:bg-orange-500/30 transition-colors"
