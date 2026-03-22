@@ -11,6 +11,8 @@ from models import (
     InsightsRequest,
     AIResponse,
     HealthResponse,
+    AgentStartRequest,
+    AgentActionResponse,
 )
 from chain import fetch_user_portfolio, fetch_platform_stats
 from ai_engine import (
@@ -18,6 +20,13 @@ from ai_engine import (
     get_risk_assessment,
     chat,
     get_dashboard_insights,
+)
+from agent import (
+    start_agent,
+    stop_agent,
+    get_agent_status,
+    get_decision_log,
+    run_agent_cycle,
 )
 
 app = FastAPI(
@@ -50,6 +59,11 @@ async def root():
             "POST /api/risk": "AI risk assessment",
             "POST /api/chat": "AI chat assistant",
             "POST /api/insights": "AI dashboard insights",
+            "POST /api/agent/start": "Start autonomous DeFi agent",
+            "POST /api/agent/stop": "Stop autonomous DeFi agent",
+            "GET /api/agent/status": "Agent status & recent decisions",
+            "GET /api/agent/decisions": "Full agent decision log",
+            "POST /api/agent/cycle": "Manually trigger one agent cycle",
         },
         "docs": "/docs",
     }
@@ -125,6 +139,66 @@ async def dashboard_insights(req: InsightsRequest):
         return AIResponse(success=True, data=insights)
     except Exception as e:
         return AIResponse(success=False, data="", error=str(e))
+
+
+# ═══════════════════════════════════════════════════════════════════
+#                    AUTONOMOUS DEFI AGENT ENDPOINTS
+# ═══════════════════════════════════════════════════════════════════
+
+
+@app.post("/api/agent/start", response_model=AgentActionResponse)
+async def agent_start(req: AgentStartRequest):
+    """Start the autonomous DeFi agent to monitor and manage vaults."""
+    try:
+        result = start_agent(
+            user_address=req.user_address,
+            vault_addresses=req.vault_addresses,
+            risk_profile=req.risk_profile,
+            interval=req.interval,
+        )
+        return AgentActionResponse(success=True, data=result)
+    except Exception as e:
+        return AgentActionResponse(success=False, data={}, error=str(e))
+
+
+@app.post("/api/agent/stop", response_model=AgentActionResponse)
+async def agent_stop():
+    """Stop the autonomous DeFi agent."""
+    try:
+        result = stop_agent()
+        return AgentActionResponse(success=True, data=result)
+    except Exception as e:
+        return AgentActionResponse(success=False, data={}, error=str(e))
+
+
+@app.get("/api/agent/status")
+async def agent_status():
+    """Get agent status including recent decisions."""
+    try:
+        status = get_agent_status()
+        return {"success": True, "data": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/agent/decisions")
+async def agent_decisions(limit: int = 20):
+    """Get the agent's decision log."""
+    try:
+        log = get_decision_log(limit)
+        return {"success": True, "data": log}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/agent/cycle", response_model=AgentActionResponse)
+async def agent_manual_cycle():
+    """Manually trigger one agent monitoring cycle (for testing)."""
+    try:
+        result = run_agent_cycle()
+        return AgentActionResponse(success=True, data=result)
+    except Exception as e:
+        return AgentActionResponse(success=False, data={}, error=str(e))
 
 
 if __name__ == "__main__":

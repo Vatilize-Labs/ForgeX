@@ -39,3 +39,18 @@ class HealthResponse(BaseModel):
     status: str
     version: str
     network: str
+
+
+# ── Agent Models ──
+
+class AgentStartRequest(BaseModel):
+    user_address: str = Field(..., description="User's wallet address")
+    vault_addresses: list[str] = Field(..., description="Vault addresses to monitor")
+    risk_profile: str = Field(default="balanced", description="conservative, balanced, or aggressive")
+    interval: int = Field(default=60, description="Monitoring interval in seconds (min 30)")
+
+
+class AgentActionResponse(BaseModel):
+    success: bool
+    data: dict
+    error: str | None = None

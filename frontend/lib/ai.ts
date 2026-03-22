@@ -49,3 +49,78 @@ export async function getDashboardInsights(userAddress: string): Promise<string>
   if (!res.success) throw new Error(res.error || "Insights request failed");
   return res.data;
 }
+
+// ── Autonomous Agent API ──
+
+interface AgentActionResponse {
+  success: boolean;
+  data: Record<string, unknown>;
+  error?: string;
+}
+
+export interface AgentDecision {
+  timestamp: string;
+  decision: string;
+  reasoning: string;
+  confidence: number;
+  urgency: string;
+  risk_assessment: string;
+  market_observation: string;
+  actions_planned: number;
+  execution_results: Record<string, unknown>[];
+}
+
+export interface AgentStatus {
+  running: boolean;
+  mode: string;
+  risk_profile: string;
+  monitored_vaults: string[];
+  user_address: string | null;
+  interval_seconds: number;
+  last_check: string | null;
+  cycle_count: number;
+  recent_decisions: AgentDecision[];
+}
+
+export async function startAgent(
+  userAddress: string,
+  vaultAddresses: string[],
+  riskProfile = "balanced",
+  interval = 60
+): Promise<AgentActionResponse> {
+  const res = await fetch(`${AI_BACKEND_URL}/api/agent/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_address: userAddress,
+      vault_addresses: vaultAddresses,
+      risk_profile: riskProfile,
+      interval,
+    }),
+  });
+  return res.json();
+}
+
+export async function stopAgent(): Promise<AgentActionResponse> {
+  const res = await fetch(`${AI_BACKEND_URL}/api/agent/stop`, { method: "POST" });
+  return res.json();
+}
+
+export async function getAgentStatus(): Promise<AgentStatus> {
+  const res = await fetch(`${AI_BACKEND_URL}/api/agent/status`);
+  const data = await res.json();
+  if (!data.success) throw new Error("Failed to get agent status");
+  return data.data as AgentStatus;
+}
+
+export async function getAgentDecisions(limit = 20): Promise<AgentDecision[]> {
+  const res = await fetch(`${AI_BACKEND_URL}/api/agent/decisions?limit=${limit}`);
+  const data = await res.json();
+  if (!data.success) throw new Error("Failed to get agent decisions");
+  return data.data as AgentDecision[];
+}
+
+export async function triggerAgentCycle(): Promise<AgentActionResponse> {
+  const res = await fetch(`${AI_BACKEND_URL}/api/agent/cycle`, { method: "POST" });
+  return res.json();
+}

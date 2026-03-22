@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useAccount } from "wagmi";
 import { useIsRegistered } from "@/hooks/useVaultFactory";
-import { LayoutDashboard, Vault, BarChart2, Briefcase, Anchor, GitCompare, Clock, Zap } from "lucide-react";
+import { LayoutDashboard, Vault, BarChart2, Briefcase, Anchor, GitCompare, Clock, Zap, Bot } from "lucide-react";
 
 const LaunchButton = dynamic(() => import("./LaunchButton"), { ssr: false });
 const ThemeToggle = dynamic(() => import("./ThemeToggle"), { ssr: false });
@@ -19,6 +19,7 @@ const NAV_LINKS = [
   { href: "/compare",   label: "Compare",   icon: GitCompare },
   { href: "/history",   label: "History",   icon: Clock },
   { href: "/automation",label: "Automation",icon: Zap },
+  { href: "/agent",     label: "Agent",     icon: Bot },
   { href: "/hook",      label: "VultHook",  icon: Anchor },
 ];
 
