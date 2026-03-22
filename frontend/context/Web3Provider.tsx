@@ -6,6 +6,7 @@ import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { base, baseSepolia } from '@reown/appkit/networks'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { http } from 'viem'
 
 const queryClient = new QueryClient()
 
@@ -22,6 +23,10 @@ const wagmiAdapter = new WagmiAdapter({
   networks: [base, baseSepolia],
   projectId,
   ssr: true,
+  transports: {
+    [base.id]: http('https://mainnet.base.org'),
+    [baseSepolia.id]: http('https://sepolia.base.org'),
+  },
 })
 
 // Called unconditionally at module level — mirrors AION pattern so useAppKit always works
