@@ -93,11 +93,16 @@ def _format_vault_state(vaults_data: list[dict]) -> str:
         compound = v.get("compound_balance")
         usd = v.get("total_value_usd")
 
+        # Use asset's actual decimals (e.g. 6 for USDT/USDC, 18 for WETH/DAI)
+        asset_decimals = v.get("asset_decimals", 18)
+        asset_divisor = 10 ** asset_decimals
+
         def fmt(val):
             if val is None:
                 return "N/A"
-            return f"{val / 1e18:.6f}"
+            return f"{val / asset_divisor:.6f}"
 
+        # USD values from the contract are always 18 decimals
         def fmt_usd(val):
             if val is None:
                 return "N/A"

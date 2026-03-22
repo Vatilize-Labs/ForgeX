@@ -39,12 +39,16 @@ def _format_vault_context(portfolio: dict) -> str:
         share_price = v.get("share_price_usd")
         user_shares = v.get("user_shares", 0)
 
-        # Format wei values to readable (18 decimals)
+        # Use asset's actual decimals (e.g. 6 for USDT/USDC, 18 for WETH/DAI)
+        asset_decimals = v.get("asset_decimals", 18)
+        asset_divisor = 10 ** asset_decimals
+
         def fmt(val):
             if val is None:
                 return "N/A"
-            return f"{val / 1e18:.4f}"
+            return f"{val / asset_divisor:.4f}"
 
+        # USD values from the contract are always 18 decimals
         def fmt_usd(val):
             if val is None:
                 return "N/A"
