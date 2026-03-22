@@ -48,17 +48,17 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
   const [showGovernance, setShowGovernance] = useState(false);
   const [newOwner, setNewOwner] = useState("");
   const [step, setStep] = useState<"idle" | "approving" | "depositing">("idle");
+  const [pendingRawAmount, setPendingRawAmount] = useState<bigint | null>(null);
 
   const decimals = vault.assetDecimals;
 
   // Handle deposit flow: approve then deposit
   useEffect(() => {
-    if (deposit.approveConfirmed && step === "approving") {
+    if (deposit.approveConfirmed && step === "approving" && pendingRawAmount != null) {
       setStep("depositing");
-      const amount = parseUnits(depositAmount, decimals);
-      deposit.deposit(amount);
+      deposit.deposit(pendingRawAmount);
     }
-  }, [deposit.approveConfirmed]);
+  }, [deposit.approveConfirmed, step, pendingRawAmount]);
 
   useEffect(() => {
     if (deposit.depositConfirmed) {
@@ -66,6 +66,7 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
       setDepositAmount("");
       setShowDeposit(false);
       setStep("idle");
+      setPendingRawAmount(null);
       vault.refetch();
     }
   }, [deposit.depositConfirmed]);
@@ -115,6 +116,7 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
     if (deposit.error) {
       showToast(`Deposit failed: ${deposit.error.message.slice(0, 80)}`, "error");
       setStep("idle");
+      setPendingRawAmount(null);
     }
     if (withdraw.error) {
       showToast(`Withdraw failed: ${withdraw.error.message.slice(0, 80)}`, "error");
@@ -154,6 +156,7 @@ export default function VaultCard({ vaultAddress, index }: VaultCardProps) {
   const handleDeposit = () => {
     if (!depositAmount || !vault.assetAddress) return;
     const amount = parseUnits(depositAmount, decimals);
+    setPendingRawAmount(amount);
     setStep("approving");
     deposit.approve(vault.assetAddress as `0x${string}`, amount);
   };

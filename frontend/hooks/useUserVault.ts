@@ -51,6 +51,15 @@ export function useVaultData(vaultAddress: `0x${string}`) {
     query: { enabled: !!vaultAddress },
   });
 
+  // Read decimals directly from the underlying asset's ERC20 contract
+  const assetAddrRaw = asset.data as `0x${string}` | undefined;
+  const onChainDecimals = useReadContract({
+    address: assetAddrRaw,
+    abi: ERC20_ABI,
+    functionName: "decimals",
+    query: { enabled: !!assetAddrRaw },
+  });
+
   const isPaused = useReadContract({
     address: vaultAddress,
     abi: USER_VAULT_ABI,
@@ -95,7 +104,10 @@ export function useVaultData(vaultAddress: `0x${string}`) {
   });
 
   const assetAddr = asset.data as string | undefined;
-  const assetDecimals = assetAddr ? (TOKEN_META[assetAddr.toLowerCase()]?.decimals ?? 18) : 18;
+  // Use on-chain decimals (read from the ERC20 contract), fall back to TOKEN_META, then 18
+  const assetDecimals = onChainDecimals.data != null
+    ? Number(onChainDecimals.data)
+    : assetAddr ? (TOKEN_META[assetAddr.toLowerCase()]?.decimals ?? 18) : 18;
 
   return {
     name: vaultName.data as string | undefined,
