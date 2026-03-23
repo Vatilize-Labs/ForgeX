@@ -4,14 +4,15 @@
 
 ![ForgeX Banner](https://img.shields.io/badge/ForgeX-Vult-8FA828?style=for-the-badge&logo=ethereum&logoColor=white)
 
-[![Hackathon](https://img.shields.io/badge/Uniswap%20Hook%20Incubator-Submission-8FA828?style=flat-square)](https://github.com/BitBand-Labs/forgeX)
+[![Hackathon](https://img.shields.io/badge/Tether%20Hackathon%20Galactica-WDK%20Edition-8FA828?style=flat-square)](https://dorahacks.io/hackathon/hackathon-galactica-wdk-2026-01)
+[![WDK](https://img.shields.io/badge/Tether-WDK%20Powered-00A67E?style=flat-square)](https://docs.wdk.tether.io)
 [![Network](https://img.shields.io/badge/Base-Mainnet-0052FF?style=flat-square&logo=base)](https://basescan.org)
 [![Uniswap v4](https://img.shields.io/badge/Uniswap-v4%20Hook-FF007A?style=flat-square)](https://github.com/Uniswap/v4-core)
 [![AI Powered](https://img.shields.io/badge/AI-Claude%20Sonnet-8FA828?style=flat-square)](https://anthropic.com)
 [![ERC-4626](https://img.shields.io/badge/ERC--4626-Vaults-6366f1?style=flat-square)](https://eips.ethereum.org/EIPS/eip-4626)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-**Demo Video** (coming soon) · [Pitch Deck](https://docs.google.com/presentation/d/1BxzJ7kp0T9UA092X6j3Rze7UmorCeSYA/edit?usp=sharing&ouid=100528488557506058575&rtpof=true&sd=true) · [Live App](https://forgex-vult.vercel.app/) · [GitHub](https://github.com/BitBand-Labs/forgeX)
+**Demo Video** (coming soon) · [Pitch Deck](https://docs.google.com/presentation/d/1BxzJ7kp0T9UA092X6j3Rze7UmorCeSYA/edit?usp=sharing&ouid=100528488557506058575&rtpof=true&sd=true) · [Live App](https://forgex-app.vercel.app/) · [GitHub](https://github.com/Vatilize-Labs/ForgeX)
 
 </div>
 
@@ -128,11 +129,18 @@ forgeX/
 │   ├── lib/                         # ABIs, constants, AI client
 │   └── README.md                    # Frontend deep-dive
 │
-└── ai-backend/                 # Python FastAPI + Anthropic Claude
-    ├── main.py                      # 7 REST endpoints
-    ├── ai_engine.py                 # Claude Sonnet integration
-    ├── chain.py                     # On-chain reads via Web3.py
-    └── README.md
+├── ai-backend/                 # Python FastAPI + Anthropic Claude
+│   ├── main.py                      # REST endpoints + agent control
+│   ├── ai_engine.py                 # Claude Sonnet integration
+│   ├── agent.py                     # Autonomous DeFi agent (monitor → reason → execute)
+│   ├── chain.py                     # On-chain reads via Web3.py
+│   └── README.md
+│
+└── agent-wdk/                  # Tether WDK — Agent wallet & tx execution sidecar
+    ├── src/index.js                 # Express REST endpoints
+    ├── src/wallet.js                # WDK wallet operations + contract interactions
+    ├── src/config.js                # Configuration
+    └── src/abis.js                  # Smart contract ABIs
 ```
 
 ---
@@ -147,9 +155,9 @@ Users register on-chain and deploy personal `UserVault` instances — ERC-4626 t
 
 VultHook is a Uniswap v4 hook that intercepts pool lifecycle events:
 
-- **[`_afterAddLiquidity`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L62)** — when LPs provide liquidity, idle capital is deposited into ForgeX vaults (deployed to Aave/Compound). Capital goes to work immediately.
-- **[`_beforeSwap`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L93)** — ensures the pool has enough liquid capital to execute the swap; rebalances from vaults if needed.
-- **[`_afterSwap`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L106)** — compares [`totalAssetsAccrued()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L185) vs [`totalAssets()`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/UserVault.sol#L173). If the delta exceeds 1,000 wei, the accrued yield is harvested and donated to LPs via `poolManager.donate()`.
+- **[`_afterAddLiquidity`](https://github.com/Vatilize-Labs/ForgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L62)** — when LPs provide liquidity, idle capital is deposited into ForgeX vaults (deployed to Aave/Compound). Capital goes to work immediately.
+- **[`_beforeSwap`](https://github.com/Vatilize-Labs/ForgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L93)** — ensures the pool has enough liquid capital to execute the swap; rebalances from vaults if needed.
+- **[`_afterSwap`](https://github.com/Vatilize-Labs/ForgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L106)** — compares [`totalAssetsAccrued()`](https://github.com/Vatilize-Labs/ForgeX/blob/main/smartcontract/contracts/UserVault.sol#L185) vs [`totalAssets()`](https://github.com/Vatilize-Labs/ForgeX/blob/main/smartcontract/contracts/UserVault.sol#L173). If the delta exceeds 1,000 wei, the accrued yield is harvested and donated to LPs via `poolManager.donate()`.
 
 **Result:** LPs earn standard Uniswap swap fees **plus** the lending yield their idle capital generates between swaps.
 
@@ -177,10 +185,12 @@ The FastAPI backend reads on-chain data (vault balances, allocations, yield) via
 | Animations        | Framer Motion                                                                                                 | Page transitions, card reveals     |
 | AI Backend        | FastAPI, Python 3.11                                                                                          | REST API layer                     |
 | AI Model          | Anthropic Claude Sonnet 4                                                                                     | Strategy, insights, risk, chat     |
+| Agent Wallet      | Tether WDK (`@tetherto/wdk`)                                                                                  | Autonomous tx execution sidecar    |
 | On-chain Reads    | Web3.py                                                                                                       | AI backend reads vault state       |
 | Network           | Base Mainnet (Chain ID 8453)                                                                                  | L2 deployment                      |
 | Frontend Deploy   | Vercel                                                                                                        | CI/CD, edge network                |
-| Backend Deploy    | Render                                                                                                        | `https://forgex-14vp.onrender.com` |
+| Backend Deploy    | Render                                                                                                        | `https://forgex-ai-backend.onrender.com` |
+| WDK Sidecar Deploy| Render                                                                                                        | `https://forgex-azwa.onrender.com` |
 
 ---
 
@@ -193,7 +203,7 @@ The FastAPI backend reads on-chain data (vault balances, allocations, yield) via
 - ERC-4626 compliant: deposit / withdraw / mint / redeem with share price accounting
 - Aave V3 and Compound V2 allocation with single-function calls
 - Chainlink price feeds for manipulation-resistant USD valuations
-- VultHook: [`afterAddLiquidity`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L62) → idle LP capital deployed; [`afterSwap`](https://github.com/BitBand-Labs/forgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L106) → yield harvested → `donate()` to LPs
+- VultHook: [`afterAddLiquidity`](https://github.com/Vatilize-Labs/ForgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L62) → idle LP capital deployed; [`afterSwap`](https://github.com/Vatilize-Labs/ForgeX/blob/main/smartcontract/contracts/vult/VultHook.sol#L106) → yield harvested → `donate()` to LPs
 - Chainlink Automation compatible: `checkUpkeep` / `performUpkeep` for automated yield harvesting
 - Pause / unpause emergency controls + `transferOwnership` governance
 
@@ -240,7 +250,7 @@ Full light mode toggled via `ThemeToggle` in the navbar, persisted to `localStor
 
 ```bash
 # Clone the repository
-git clone https://github.com/BitBand-Labs/forgeX.git
+git clone https://github.com/Vatilize-Labs/ForgeX.git
 cd forgeX
 
 # ── Smart Contracts ─────────────────────────────────────────────────────────
@@ -264,6 +274,12 @@ python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # Fill in ANTHROPIC_API_KEY, BASE_RPC_URL, VAULT_FACTORY_ADDRESS
 uvicorn main:app --reload   # → http://localhost:8000
+
+# ── Agent WDK Sidecar ───────────────────────────────────────────────────────
+cd ../agent-wdk
+npm install
+cp .env.example .env   # Fill in AGENT_PRIVATE_KEY
+npm run dev              # → http://localhost:3100
 ```
 
 ---
@@ -277,7 +293,7 @@ uvicorn main:app --reload   # → http://localhost:8000
 NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id
 
 # AI Backend (deployed on Render, or localhost for dev)
-NEXT_PUBLIC_AI_BACKEND_URL=https://forgex-14vp.onrender.com
+NEXT_PUBLIC_AI_BACKEND_URL=https://forgex-ai-backend.onrender.com
 ```
 
 ### Smart Contracts — `smartcontract/.env`
@@ -295,6 +311,17 @@ ETHERSCAN_API_KEY=your_basescan_api_key
 ANTHROPIC_API_KEY=sk-ant-...
 BASE_RPC_URL=https://mainnet.base.org
 VAULT_FACTORY_ADDRESS=0x8374257da04F00ABAf74E13EFE5A17B0f08EC226
+WDK_SIDECAR_URL=http://localhost:3100
+```
+
+### Agent WDK — `agent-wdk/.env`
+
+```env
+BASE_RPC_URL=https://mainnet.base.org
+AGENT_PRIVATE_KEY=your_agent_wallet_private_key
+VAULT_FACTORY_ADDRESS=0x8374257da04F00ABAf74E13EFE5A17B0f08EC226
+VULT_HOOK_ADDRESS=0xe988b6816d94C10377779F08f2ab08925cE96D09
+USDT_ADDRESS=0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2
 ```
 
 ---
@@ -303,11 +330,11 @@ VAULT_FACTORY_ADDRESS=0x8374257da04F00ABAf74E13EFE5A17B0f08EC226
 
 | Resource                | URL                                                                     |
 | ----------------------- | ----------------------------------------------------------------------- |
-| Live App                | [https://forgex-vult.vercel.app/](https://forgex-vult.vercel.app/) |
+| Live App                | [https://forgex-app.vercel.app/](https://forgex-app.vercel.app/) |
 | Demo Video              | YOUR_DEMO_VIDEO_LINK_HERE |
 | Pitch Deck              | [View Deck](https://docs.google.com/presentation/d/1BxzJ7kp0T9UA092X6j3Rze7UmorCeSYA/edit?usp=sharing&ouid=100528488557506058575&rtpof=true&sd=true) |
-| AI Backend              | https://forgex-14vp.onrender.com                                        |
-| GitHub                  | https://github.com/BitBand-Labs/forgeX                                  |
+| AI Backend              | https://forgex-ai-backend.onrender.com                                        |
+| GitHub                  | https://github.com/Vatilize-Labs/ForgeX                                  |
 | VaultFactory (BaseScan) | https://basescan.org/address/0x8374257da04F00ABAf74E13EFE5A17B0f08EC226 |
 | VultHook (BaseScan)     | https://basescan.org/address/0xe988b6816d94C10377779F08f2ab08925cE96D09 |
 | Uniswap v4-core         | https://github.com/Uniswap/v4-core                                      |
