@@ -155,7 +155,6 @@ async def agent_start(req: AgentStartRequest):
             vault_addresses=req.vault_addresses,
             risk_profile=req.risk_profile,
             interval=req.interval,
-            simulate=req.simulate,
         )
         return AgentActionResponse(success=True, data=result)
     except Exception as e:

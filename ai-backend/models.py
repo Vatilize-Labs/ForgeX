@@ -48,7 +48,6 @@ class AgentStartRequest(BaseModel):
     vault_addresses: list[str] = Field(..., description="Vault addresses to monitor")
     risk_profile: str = Field(default="balanced", description="conservative, balanced, or aggressive")
     interval: int = Field(default=60, description="Monitoring interval in seconds (min 30)")
-    simulate: bool = Field(default=True, description="Simulation mode — log decisions without executing on-chain")
 
 
 class AgentActionResponse(BaseModel):

@@ -52,7 +52,6 @@ export default function AgentPage() {
   const [status, setStatus] = useState<AgentStatus | null>(null);
   const [riskProfile, setRiskProfile] = useState("balanced");
   const [interval, setInterval_] = useState(60);
-  const [simulate, setSimulate] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedDecision, setExpandedDecision] = useState<number | null>(null);
@@ -105,7 +104,7 @@ export default function AgentPage() {
     setLoading(true);
     setError(null);
     try {
-      await startAgent(address, vaultList as string[], riskProfile, interval, simulate);
+      await startAgent(address, vaultList as string[], riskProfile, interval);
       await fetchStatus();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to start agent");
@@ -157,18 +156,6 @@ export default function AgentPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            {isRunning && status?.simulate && (
-              <span
-                style={{
-                  background: "rgba(234,179,8,0.12)",
-                  border: "1px solid rgba(234,179,8,0.25)",
-                  color: "#eab308",
-                }}
-                className="px-3 py-2 rounded-lg text-xs font-bold"
-              >
-                SIMULATION
-              </span>
-            )}
             <span
               style={{
                 background: isRunning ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
@@ -262,44 +249,6 @@ export default function AgentPage() {
                 />
               </div>
 
-              {/* Simulation Toggle */}
-              <div className="mb-4">
-                <label className="label block mb-2">Execution Mode</label>
-                <button
-                  onClick={() => !isRunning && setSimulate(!simulate)}
-                  disabled={isRunning}
-                  style={{
-                    background: simulate ? "rgba(234,179,8,0.1)" : "rgba(34,197,94,0.1)",
-                    border: `1px solid ${simulate ? "rgba(234,179,8,0.3)" : "rgba(34,197,94,0.3)"}`,
-                    opacity: isRunning ? 0.5 : 1,
-                  }}
-                  className="w-full text-left rounded-lg p-3 transition-all"
-                >
-                  <div className="flex items-center justify-between">
-                    <span style={{ color: simulate ? "#eab308" : "#22c55e", fontWeight: 700, fontSize: 13 }}>
-                      {simulate ? "Simulation Mode" : "Live Execution"}
-                    </span>
-                    <span
-                      style={{
-                        background: simulate ? "rgba(234,179,8,0.2)" : "rgba(34,197,94,0.2)",
-                        color: simulate ? "#eab308" : "#22c55e",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        padding: "2px 8px",
-                        borderRadius: 999,
-                      }}
-                    >
-                      {simulate ? "SAFE" : "LIVE"}
-                    </span>
-                  </div>
-                  <p style={{ color: "var(--foreground-dim)", fontSize: 11, marginTop: 4 }}>
-                    {simulate
-                      ? "Agent reasons and decides, but does NOT execute on-chain. Perfect for demos."
-                      : "Agent will execute real on-chain transactions via WDK wallet."}
-                  </p>
-                </button>
-              </div>
-
               {/* Vaults */}
               <div className="mb-4">
                 <label className="label block mb-2">Monitored Vaults</label>
@@ -382,7 +331,6 @@ export default function AgentPage() {
 
                 <div className="space-y-3">
                   {[
-                    { label: "Mode", value: status.simulate ? "Simulation" : "Live" },
                     { label: "Cycles Completed", value: status.cycle_count },
                     { label: "Risk Profile", value: status.risk_profile },
                     { label: "Check Interval", value: `${status.interval_seconds}s` },
@@ -521,34 +469,26 @@ export default function AgentPage() {
                           )}
                           {d.actions_planned > 0 && (
                             <div>
-                              <span className="label block mb-1">
-                                {(d.execution_results[0] as Record<string, unknown>)?.simulated ? "Simulated Actions" : "Actions Executed"}
-                              </span>
+                              <span className="label block mb-1">Actions Executed</span>
                               <p style={{ color: "var(--foreground-muted)", fontSize: 12 }}>
                                 {d.actions_planned} action(s) planned
                               </p>
                               {d.execution_results.length > 0 && (
                                 <div className="mt-2 space-y-1">
-                                  {d.execution_results.map((r, j) => {
-                                    const result = r as Record<string, unknown>;
-                                    const isSim = result.simulated === true;
-                                    return (
-                                      <div
-                                        key={j}
-                                        style={{
-                                          background: isSim ? "rgba(234,179,8,0.06)" : "var(--card)",
-                                          border: `1px solid ${isSim ? "rgba(234,179,8,0.2)" : "var(--border)"}`,
-                                          fontSize: 11,
-                                          color: isSim ? "#eab308" : "var(--foreground-muted)",
-                                        }}
-                                        className="rounded-lg p-2 font-mono"
-                                      >
-                                        {isSim
-                                          ? String(result.message)
-                                          : JSON.stringify(r, null, 0)}
-                                      </div>
-                                    );
-                                  })}
+                                  {d.execution_results.map((r, j) => (
+                                    <div
+                                      key={j}
+                                      style={{
+                                        background: "var(--card)",
+                                        border: "1px solid var(--border)",
+                                        fontSize: 11,
+                                        color: "var(--foreground-muted)",
+                                      }}
+                                      className="rounded-lg p-2 font-mono"
+                                    >
+                                      {JSON.stringify(r, null, 0)}
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                             </div>

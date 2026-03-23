@@ -122,6 +122,32 @@ app.post("/execute/deploy-compound", async (req, res) => {
   }
 });
 
+app.post("/execute/withdraw-aave", async (req, res) => {
+  try {
+    const { vault_address, amount } = req.body;
+    if (!vault_address || !amount) {
+      return res.status(400).json({ success: false, error: "vault_address and amount required" });
+    }
+    const result = await wallet.withdrawFromAave(vault_address, amount);
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.post("/execute/withdraw-compound", async (req, res) => {
+  try {
+    const { vault_address, amount } = req.body;
+    if (!vault_address || !amount) {
+      return res.status(400).json({ success: false, error: "vault_address and amount required" });
+    }
+    const result = await wallet.withdrawFromCompound(vault_address, amount);
+    res.json({ success: true, data: result });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 app.post("/execute/rebalance", async (req, res) => {
   try {
     const { vault_address, from_protocol, to_protocol, amount } = req.body;
