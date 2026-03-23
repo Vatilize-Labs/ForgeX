@@ -30,6 +30,7 @@ MODEL = "claude-sonnet-4-20250514"
 agent_state = {
     "running": False,
     "mode": "monitor",  # monitor | paused
+    "simulate": True,  # simulation mode — log decisions without executing on-chain
     "risk_profile": "balanced",  # conservative | balanced | aggressive
     "monitored_vaults": [],  # vault addresses the agent watches
     "user_address": None,
@@ -243,12 +244,23 @@ def run_agent_cycle():
             "actions": [],
         }
 
-    # Step 3: Execute — if agent decides to act
+    # Step 3: Execute or Simulate
     results = []
+    is_sim = agent_state.get("simulate", False)
+
     if decision.get("decision") != "no_action" and decision.get("actions"):
         for action in decision["actions"]:
-            result = _execute_action(action)
-            results.append(result)
+            if is_sim:
+                results.append({
+                    "simulated": True,
+                    "action": action.get("type"),
+                    "vault": action.get("vault_address"),
+                    "amount": action.get("amount"),
+                    "message": f"SIMULATION: would {action.get('type')} {action.get('amount')} on vault {action.get('vault_address', '')[:10]}...",
+                })
+            else:
+                result = _execute_action(action)
+                results.append(result)
 
     # Step 4: Log
     _log_decision(decision, results)
@@ -258,6 +270,7 @@ def run_agent_cycle():
 
     return {
         "status": "completed",
+        "simulated": is_sim,
         "decision": decision,
         "execution_results": results,
         "cycle": agent_state["cycle_count"],
@@ -283,7 +296,7 @@ def _agent_loop():
 _agent_thread = None
 
 
-def start_agent(user_address: str, vault_addresses: list[str], risk_profile: str = "balanced", interval: int = 60):
+def start_agent(user_address: str, vault_addresses: list[str], risk_profile: str = "balanced", interval: int = 60, simulate: bool = True):
     """Start the autonomous agent."""
     global _agent_thread
 
@@ -292,6 +305,7 @@ def start_agent(user_address: str, vault_addresses: list[str], risk_profile: str
 
     agent_state["running"] = True
     agent_state["mode"] = "monitor"
+    agent_state["simulate"] = simulate
     agent_state["user_address"] = user_address
     agent_state["monitored_vaults"] = vault_addresses
     agent_state["risk_profile"] = risk_profile
@@ -303,6 +317,7 @@ def start_agent(user_address: str, vault_addresses: list[str], risk_profile: str
 
     return {
         "status": "started",
+        "simulate": simulate,
         "monitoring": vault_addresses,
         "risk_profile": risk_profile,
         "interval": agent_state["interval_seconds"],
@@ -321,6 +336,7 @@ def get_agent_status():
     return {
         "running": agent_state["running"],
         "mode": agent_state["mode"],
+        "simulate": agent_state.get("simulate", False),
         "risk_profile": agent_state["risk_profile"],
         "monitored_vaults": agent_state["monitored_vaults"],
         "user_address": agent_state["user_address"],

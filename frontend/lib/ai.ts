@@ -73,6 +73,7 @@ export interface AgentDecision {
 export interface AgentStatus {
   running: boolean;
   mode: string;
+  simulate: boolean;
   risk_profile: string;
   monitored_vaults: string[];
   user_address: string | null;
@@ -86,7 +87,8 @@ export async function startAgent(
   userAddress: string,
   vaultAddresses: string[],
   riskProfile = "balanced",
-  interval = 60
+  interval = 60,
+  simulate = true
 ): Promise<AgentActionResponse> {
   const res = await fetch(`${AI_BACKEND_URL}/api/agent/start`, {
     method: "POST",
@@ -96,6 +98,7 @@ export async function startAgent(
       vault_addresses: vaultAddresses,
       risk_profile: riskProfile,
       interval,
+      simulate,
     }),
   });
   return res.json();
