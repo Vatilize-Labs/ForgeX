@@ -192,8 +192,19 @@ def _execute_action(action: dict) -> dict:
         payload["to_protocol"] = action.get("to_protocol")
 
     try:
-        resp = httpx.post(f"{WDK_SIDECAR_URL}{endpoint}", json=payload, timeout=60.0)
-        return resp.json()
+        url = f"{WDK_SIDECAR_URL}{endpoint}"
+        resp = httpx.post(url, json=payload, timeout=60.0)
+        # Log raw response for debugging
+        if not resp.text:
+            return {"success": False, "error": f"WDK returned empty response (status {resp.status_code}) from {endpoint}"}
+        try:
+            return resp.json()
+        except Exception:
+            return {"success": False, "error": f"WDK returned non-JSON (status {resp.status_code}): {resp.text[:200]}"}
+    except httpx.ConnectError:
+        return {"success": False, "error": f"Cannot connect to WDK sidecar at {WDK_SIDECAR_URL}"}
+    except httpx.TimeoutException:
+        return {"success": False, "error": f"WDK request timed out after 60s on {endpoint}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
