@@ -108,17 +108,26 @@ export class AgentWallet {
       vault.getAssetPriceUSD().catch(() => 0n),
     ]);
 
+    // Read actual asset decimals (e.g. 6 for USDT, 18 for WETH)
+    let assetDecimals = 18;
+    if (asset !== ethers.ZeroAddress) {
+      try {
+        const token = new ethers.Contract(asset, ERC20_ABI, this.provider);
+        assetDecimals = Number(await token.decimals());
+      } catch {}
+    }
+
     const idle = totalAssets - aaveBalance - compoundBalance;
 
     return {
       address: vaultAddress,
-      totalAssets: ethers.formatEther(totalAssets),
-      totalSupply: ethers.formatEther(totalSupply),
+      totalAssets: ethers.formatUnits(totalAssets, assetDecimals),
+      totalSupply: ethers.formatUnits(totalSupply, assetDecimals),
       asset,
       isPaused,
-      aaveBalance: ethers.formatEther(aaveBalance),
-      compoundBalance: ethers.formatEther(compoundBalance),
-      idleBalance: ethers.formatEther(idle > 0n ? idle : 0n),
+      aaveBalance: ethers.formatUnits(aaveBalance, assetDecimals),
+      compoundBalance: ethers.formatUnits(compoundBalance, assetDecimals),
+      idleBalance: ethers.formatUnits(idle > 0n ? idle : 0n, assetDecimals),
       totalValueUSD: ethers.formatEther(totalValueUSD),
       sharePriceUSD: ethers.formatEther(sharePriceUSD),
       assetPriceUSD: ethers.formatEther(assetPriceUSD),
@@ -191,12 +200,21 @@ export class AgentWallet {
     };
   }
 
+  /** Resolve the asset decimals for a vault */
+  async _getVaultAssetDecimals(vaultAddress) {
+    const vault = new ethers.Contract(vaultAddress, USER_VAULT_ABI, this.provider);
+    const assetAddress = await vault.asset();
+    const token = new ethers.Contract(assetAddress, ERC20_ABI, this.provider);
+    return await token.decimals();
+  }
+
   /** Deploy vault assets to Aave */
   async deployToAave(vaultAddress, amount) {
     if (!this.signer) throw new Error("Wallet not configured for writes");
 
     const vault = new ethers.Contract(vaultAddress, USER_VAULT_ABI, this.signer);
-    const parsedAmount = ethers.parseEther(amount.toString());
+    const decimals = await this._getVaultAssetDecimals(vaultAddress);
+    const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
     const tx = await vault.deployToAave(parsedAmount);
     const receipt = await tx.wait();
 
@@ -213,7 +231,8 @@ export class AgentWallet {
     if (!this.signer) throw new Error("Wallet not configured for writes");
 
     const vault = new ethers.Contract(vaultAddress, USER_VAULT_ABI, this.signer);
-    const parsedAmount = ethers.parseEther(amount.toString());
+    const decimals = await this._getVaultAssetDecimals(vaultAddress);
+    const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
     const tx = await vault.deployToCompound(parsedAmount);
     const receipt = await tx.wait();
 
@@ -230,7 +249,8 @@ export class AgentWallet {
     if (!this.signer) throw new Error("Wallet not configured for writes");
 
     const vault = new ethers.Contract(vaultAddress, USER_VAULT_ABI, this.signer);
-    const parsedAmount = ethers.parseEther(amount.toString());
+    const decimals = await this._getVaultAssetDecimals(vaultAddress);
+    const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
     const tx = await vault.withdrawFromAave(parsedAmount);
     const receipt = await tx.wait();
 
@@ -247,7 +267,8 @@ export class AgentWallet {
     if (!this.signer) throw new Error("Wallet not configured for writes");
 
     const vault = new ethers.Contract(vaultAddress, USER_VAULT_ABI, this.signer);
-    const parsedAmount = ethers.parseEther(amount.toString());
+    const decimals = await this._getVaultAssetDecimals(vaultAddress);
+    const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
     const tx = await vault.withdrawFromCompound(parsedAmount);
     const receipt = await tx.wait();
 
